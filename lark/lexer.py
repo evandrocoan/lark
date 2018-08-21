@@ -219,6 +219,7 @@ class TraditionalLexer(Lexer):
             self.callback[type_] = f
 
         self.tokens = tokens
+        # print('tokens ' + str(tokens))
 
         self.mres = build_mres(tokens)
 
@@ -256,7 +257,10 @@ class ContextualLexer(Lexer):
 
     def lex(self, stream):
         l = _Lex(self.lexers[self.parser_state], self.parser_state)
+        # index=0
         for x in l.lex(stream, self.root_lexer.newline_types, self.root_lexer.ignore_types):
+            # print(repr(f"[@{index},{x.pos_in_stream}:{x.pos_in_stream+len(x.value)-1}='{x.value}'<{x.type}>,{x.line}:{x.column}]"))
+            # index+=1
             yield x
             l.lexer = self.lexers[self.parser_state]
             l.state = self.parser_state
