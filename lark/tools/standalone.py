@@ -56,6 +56,7 @@ EXTRACT_STANDALONE_FILES = [
     'utils.py',
     'common.py',
     'tree.py',
+    'visitors.py',
     'indenter.py',
     'lexer.py',
     'parse_tree_builder.py',
@@ -161,11 +162,11 @@ class TreeBuilderAtoms:
         self.ptb = lark._parse_tree_builder
 
     def print_python(self):
-        print('class InlineTransformer: pass')
+        # print('class InlineTransformer: pass')
         print('RULES = {')
         for i, r in enumerate(self.rules):
             rule_ids[r] = i
-            print('  %d: Rule(%r, %r, %r, %r),' % (i, r.origin, r.expansion, self.ptb.user_aliases[r], r.options ))
+            print('  %d: Rule(%r, [%s], %r, %r),' % (i, r.origin, ', '.join(s.fullrepr for s in r.expansion), self.ptb.user_aliases[r], r.options ))
         print('}')
         print('parse_tree_builder = ParseTreeBuilder(RULES.values(), Tree)')
 

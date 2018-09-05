@@ -25,6 +25,7 @@ Most importantly, Lark will save you time and prevent you from getting parsing h
 - [Cheatsheet (PDF)](/docs/lark_cheatsheet.pdf)
 - Blog post: [How to write a DSL with Lark](http://blog.erezsh.com/how-to-write-a-dsl-in-python-with-lark/)
 - [Forum @googlegroups](https://groups.google.com/forum/#!forum/lark-parser) (New)
+- [Gitter chat](https://gitter.im/lark-parser/Lobby) (New)
 
 ### Install Lark
 
@@ -133,6 +134,7 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
 
  - [mappyfile](https://github.com/geographika/mappyfile) - a MapFile parser for working with MapServer configuration
  - [pytreeview](https://gitlab.com/parmenti/pytreeview) - a lightweight tree-based grammar explorer
+ - [tartiflette](https://github.com/dailymotion/tartiflette) - a GraphQL engine by Dailymotion (Lark is used to parse the GraphQL schemas definitions)
 
 Using Lark? Send me a message and I'll add your project!
 

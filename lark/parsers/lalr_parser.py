@@ -81,6 +81,7 @@ class _Parser:
                 else:
                     reduce(arg)
 
+        token = '<EOF>'
         while True:
             _action, arg = get_action('$END')
             if _action is Shift:
