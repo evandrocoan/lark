@@ -65,9 +65,9 @@ class _Parser:
             value_stack.append(value)
 
         # Main LALR-parser loop
-        # print('')
-        for i, token in enumerate(stream):
-            # x = token; print(repr(f"[@{i},{x.pos_in_stream}:{x.pos_in_stream+len(x.value)-1}='{x.value}'<{x.type}>,{x.line}:{x.column}]"))
+        # print(''); index = -1
+        for token in stream:
+            # index += 1; x = token; print(repr(f"[@{index},{x.pos_in_stream}:{x.pos_in_stream+len(x.value)-1}='{x.value}'<{x.type}>,{x.line}:{x.column}]"))
             while True:
                 action, arg = get_action(token.type)
                 assert arg != self.end_state
