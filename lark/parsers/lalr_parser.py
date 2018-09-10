@@ -31,7 +31,6 @@ class _Parser:
         self.callbacks = callbacks
 
     def parse(self, seq, set_state=None):
-        i = 0
         token = None
         stream = iter(seq)
         states = self.states
