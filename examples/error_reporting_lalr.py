@@ -4,7 +4,7 @@
 
 from lark import Lark, UnexpectedInput
 
-from json_parser import json_grammar   # Using the grammar from the json_parser example
+from .json_parser import json_grammar   # Using the grammar from the json_parser example
 
 json_parser = Lark(json_grammar, parser='lalr')
 
