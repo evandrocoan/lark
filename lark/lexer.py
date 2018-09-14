@@ -1,6 +1,7 @@
 ## Lexer Implementation
 
 import re
+import sys
 
 from .utils import Str, classify, get_regexp_width, Py36
 from .exceptions import UnexpectedCharacters, LexError
@@ -148,7 +149,7 @@ class _Lex:
         while True:
             lexer = self.lexer
             for mre, type_from_index in lexer.mres:
-                # print(f'stream {stream[0:50]}, mre {mre}')
+                # print(f'stream {stream[0:50]}, mre {mre}', file=sys.stderr)
                 m = mre.match(stream, line_ctr.char_pos)
                 if m:
                     value = m.group(0)
@@ -172,7 +173,7 @@ class _Lex:
             else:
                 if line_ctr.char_pos < len(stream):
                     if last_error_line != line_ctr.line:
-                        parser_errors.append( UnexpectedCharacters( original_stream,
+                        parser_errors[-1].append( UnexpectedCharacters( original_stream,
                                 line_ctr.char_pos + char_error_offset,
                                 line_ctr.line + line_error_offset,
                                 line_ctr.column + column_error_offset,
@@ -180,7 +181,7 @@ class _Lex:
                             )
                         )
 
-                    # print(f'parser_errors: {parser_errors}')
+                    # print(f'parser_errors: {parser_errors}', file=sys.stderr)
                     char_error_offset += 1
                     column_error_offset += 1
 
@@ -308,7 +309,7 @@ class TraditionalLexer(Lexer):
             assert type_ not in self.callback
             self.callback[type_] = f
 
-        # print('tokens/terminals ' + str(terminals))
+        # print('tokens/terminals ' + str(terminals), file=sys.stderr)
         self.terminals = terminals
 
         self.mres = build_mres(terminals)
@@ -350,7 +351,7 @@ class ContextualLexer(Lexer):
         l = _Lex(self.lexers[self.parser_state], self.parser_state)
         # index=-1
         for x in l.lex(stream, self.root_lexer.newline_types, self.root_lexer.ignore_types):
-            # index+=1; print(repr(f"[@{index},{x.pos_in_stream}:{x.pos_in_stream+len(x.value)-1}='{x.value}'<{x.type}>,{x.line}:{x.column}]"))
+            # index+=1; print(repr(f"[@{index},{x.pos_in_stream}:{x.pos_in_stream+len(x.value)-1}='{x.value}'<{x.type}>,{x.line}:{x.column}]"), file=sys.stderr)
             yield x
             l.lexer = self.lexers[self.parser_state]
             l.state = self.parser_state
