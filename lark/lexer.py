@@ -151,7 +151,7 @@ class _Lex:
         while True:
             lexer = self.lexer
             for mre, type_from_index in lexer.mres:
-                log(2, 'stream %s, mre %s', stream[0:50], mre)
+                log(2, 'stream %s, mre %s', repr(stream[0:50]), mre)
                 m = mre.match(stream, line_ctr.char_pos)
                 if m:
                     value = m.group(0)
@@ -351,9 +351,7 @@ class ContextualLexer(Lexer):
 
     def lex(self, stream):
         l = _Lex(self.lexers[self.parser_state], self.parser_state)
-        index=-1
         for x in l.lex(stream, self.root_lexer.newline_types, self.root_lexer.ignore_types):
-            index += 1; log( 2, repr("[@%s,%s:%s='%s'<%s>,%s:%s]"), index, x.pos_in_stream, x.pos_in_stream+len(x.value)-1, x.value, x.type, x.line, x.column )
             yield x
             l.lexer = self.lexers[self.parser_state]
             l.state = self.parser_state
