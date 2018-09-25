@@ -1,5 +1,5 @@
-*.pyc
 *.sublime-workspace
+*.pyc
 /lark_parser.egg-info/**
 tags
 .vscode
