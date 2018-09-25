@@ -70,7 +70,7 @@ class _Parser:
                     # Just take the first expected key
                     for s in states[state].keys():
                         if s.isupper():
-                            log( 2, 'For %s and %s, returning token.type %s - %s', state, key.type, s, states[state][s] )
+                            log( 2, 'For %s and %s, returning token.type %s - %s', state, token.type, s, states[state][s] )
                             return states[state][s]
 
                 else:
@@ -92,7 +92,7 @@ class _Parser:
             value = self.callbacks[rule](s)
             log(2, "callbacks[rule](s): %s", value)
 
-            _action, new_state = get_action(rule.origin)
+            _action, new_state = states[state_stack[-1]][rule.origin.name]
             assert _action is Shift
             state_stack.append(new_state)
             value_stack.append(value)
