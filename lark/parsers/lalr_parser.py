@@ -129,7 +129,7 @@ class _Parser:
             # Main LALR-parser loop
             log( 2, '' ); index = -1
             for token in stream:
-                index += 1; x = token; log( 2, "[@%s,%s:%s=%s<%s>,%s:%s]", index, x.pos_in_stream, x.pos_in_stream+len(x.value)-1, repr(x.value), x.type, x.line, x.column )
+                index += 1; log( 2, token.pretty(index) )
                 while True:
                     log( 2, 'token %s %s', type(token), repr(token))
                     action, arg = get_action(token)
