@@ -101,7 +101,7 @@ class _Parser:
             delimiter = '\n--------------\n'
             for item in value_stack:
                 if isinstance(item, Tree):
-                    sys.stderr.write('\npartial tree:%s%s\n' % (delimiter, item.pretty()))
+                    sys.stderr.write('\npartial tree:%s%s\n' % (delimiter, item.pretty(debug=True)))
                 else:
                     sys.stderr.write('\nloose token:%s%s\n' % (delimiter, repr(item)))
 
