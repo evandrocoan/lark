@@ -10,7 +10,7 @@ The Pushdown class is the main interface for the library. It's mostly a thin wra
 
 ### Methods
 
-#### \_\_init\_\_(self, grammar, **options)
+#### \_\_init\_\_(self, grammar, \*\*options)
 
 The Pushdown class accepts a grammar string or file object, and keyword options:
 
@@ -26,7 +26,7 @@ The Pushdown class accepts a grammar string or file object, and keyword options:
 
 * ambiguity (only relevant for earley and cyk)
 
-     * "explicit" - Return all derivations inside an "_ambig" data node.
+     * "explicit" - Return all derivations inside an "\_ambig" data node.
 
      * "resolve" - Let the parser choose the best derivation (greedy for tokens, non-greedy for rules. Default)
 
@@ -76,7 +76,12 @@ Returns all nodes of the tree whose data equals the given data.
 
 #### iter_subtrees(self)
 
-Iterates over all the subtrees, never returning to the same node twice (Pushdown's parse-tree is actually a DAG)
+Iterates over all the subtrees, never returning to the same node twice. Pushdown's
+parse-tree is actually a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph).
+
+#### iter_subtrees_topdown(self)
+
+Iterates over all the subtrees, return nodes in order like pretty() does.
 
 #### \_\_eq\_\_, \_\_hash\_\_
 

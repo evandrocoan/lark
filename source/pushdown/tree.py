@@ -57,6 +57,7 @@ class Tree(object):
         when creating the token string representation.
         """
         return ''.join(self._pretty(0, indent_str, [int(debug)-1]))
+
     def __eq__(self, other):
         try:
             return self.data == other.data and self.children == other.children
@@ -114,12 +115,25 @@ class Tree(object):
                 yield x
                 seen.add(id(x))
 
+    def iter_subtrees_topdown(self):
+        if not self.children:
+            return self
+
+        stack = [self]
+        while stack:
+            node = stack.pop()
+            if not isinstance(node, Tree):
+                continue
+            yield node
+            for n in reversed(node.children):
+                stack.append(n)
 
     def __deepcopy__(self, memo):
         return type(self)(self.data, deepcopy(self.children, memo))
 
     def copy(self):
         return type(self)(self.data, self.children)
+
     def set(self, data, children):
         self.data = data
         self.children = children
