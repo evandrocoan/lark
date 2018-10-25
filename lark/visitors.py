@@ -26,7 +26,7 @@ class Transformer:
         try:
             f = getattr(self, tree.data)
         except AttributeError:
-            return self.__default__(tree.data, children, tree.meta)
+            return self.__default__(tree, children)
         else:
             if getattr(f, 'meta', False):
                 return f(children, tree.meta)
@@ -39,15 +39,19 @@ class Transformer:
             else:
                 return f(children)
 
-    def _transform_children(self, children):
-        for c in children:
+    def _transform_children(self, tree):
+        for c in tree.children:
             try:
-                yield self._transform_tree(c) if isinstance(c, Tree) else c
+                if isinstance(c, Tree):
+                    c.parent = tree
+                    yield self._transform_tree(c)
+                else:
+                    yield c
             except Discard:
                 pass
 
     def _transform_tree(self, tree):
-        children = list(self._transform_children(tree.children))
+        children = list(self._transform_children(tree))
         return self._call_userfunc(tree, children)
 
     def transform(self, tree):
@@ -56,9 +60,9 @@ class Transformer:
     def __mul__(self, other):
         return TransformerChain(self, other)
 
-    def __default__(self, data, children, meta):
-        "Default operation on tree (for override)"
-        return Tree(data, children, meta)
+    def __default__(self, tree, children):
+        """Default operation on tree (for override)"""
+        return Tree(tree.data, children, tree.meta, tree.parent)
 
     @classmethod
     def _apply_decorator(cls, decorator, **kwargs):
@@ -81,7 +85,7 @@ class InlineTransformer(Transformer):   # XXX Deprecated
         try:
             f = getattr(self, tree.data)
         except AttributeError:
-            return self.__default__(tree.data, children, tree.meta)
+            return self.__default__(tree, children)
         else:
             return f(*children)
 
@@ -106,7 +110,7 @@ class Transformer_InPlace(Transformer):
 
     def transform(self, tree):
         for subtree in tree.iter_subtrees():
-            subtree.children = list(self._transform_children(subtree.children))
+            subtree.children = list(self._transform_children(subtree))
 
         return self._transform_tree(tree)
 
@@ -114,7 +118,7 @@ class Transformer_InPlace(Transformer):
 class Transformer_InPlaceRecursive(Transformer):
     "Recursive. Changes the tree in-place instead of returning new instances"
     def _transform_tree(self, tree):
-        tree.children = list(self._transform_children(tree.children))
+        tree.children = list(self._transform_children(tree))
         return self._call_userfunc(tree)
 
 
@@ -140,6 +144,7 @@ class Visitor(VisitorBase):
 
     def visit(self, tree):
         for subtree in tree.iter_subtrees():
+            subtree.parent = tree
             self._call_userfunc(subtree)
         return tree
 
@@ -153,6 +158,7 @@ class Visitor_Recursive(VisitorBase):
     def visit(self, tree):
         for child in tree.children:
             if isinstance(child, Tree):
+                child.parent = tree
                 self.visit(child)
 
         f = getattr(self, tree.data, self.__default__)
@@ -179,11 +185,12 @@ class Interpreter:
     Unlike Transformer and Visitor, the Interpreter doesn't automatically visit its sub-branches.
     The user has to explicitly call visit_children, or use the @visit_children_decor
     """
-    def visit(self, tree):
+    def visit(self, tree, parent):
+        tree.parent = parent
         return getattr(self, tree.data)(tree)
 
     def visit_children(self, tree):
-        return [self.visit(child) if isinstance(child, Tree) else child
+        return [self.visit(child, parent) if isinstance(child, Tree) else child
                 for child in tree.children]
 
     def __getattr__(self, name):

@@ -12,10 +12,11 @@ class Meta:
     pass
 
 class Tree(object):
-    def __init__(self, data, children, meta=None):
+    def __init__(self, data, children, meta=None, parent=None):
         self.data = data
         self.children = children
         self._meta = meta
+        self.parent = parent
 
     @property
     def meta(self):
