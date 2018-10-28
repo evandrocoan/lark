@@ -90,7 +90,7 @@ Transformers & Visitors provide a convenient interface to process the parse-tree
 
 They are used by inheriting from the correct class (visitor or transformer), and implementing methods corresponding to the rule you wish to process. Each methods accepts the children as an argument. That can be modified using the `v-args` decorator, which allows to inline the arguments (akin to `*args`), or add the tree `meta` property as an argument.
 
-See: https://github.com/lark-parser/lark/blob/master/lark/visitors.py
+See: https://github.com/evandrocoan/pushdown/blob/master/lark/visitors.py
 
 ### Visitors
 
@@ -216,4 +216,4 @@ Accepts the parse function (usually `lark_instance.parse`) and a dictionary of `
 
 The function will iterate the dictionary until it finds a matching error, and return the corresponding value.
 
-For an example usage, see: [examples/error_reporting_lalr.py](https://github.com/lark-parser/lark/blob/master/examples/error_reporting_lalr.py)
+For an example usage, see: [examples/error_reporting_lalr.py](https://github.com/evandrocoan/pushdown/blob/master/examples/error_reporting_lalr.py)

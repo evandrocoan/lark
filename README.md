@@ -1,4 +1,10 @@
-# Lark - a modern parsing library for Python
+# Pushdown - a modern parsing library for Python
+
+This project is a fork from https://github.com/lark-parser/lark,
+and the new name transition still in progress.
+Then,
+until this process is complete,
+you should see the name `Lark` several places.
 
 Parse any context-free grammar, FAST and EASY!
 
@@ -31,27 +37,21 @@ Lark will save you time and prevent you from getting parsing headaches.
 
 ### Quick links
 
-- [Documentation @readthedocs](https://lark-parser.readthedocs.io/)
 - [Tutorial](/docs/json_tutorial.md) for writing a JSON parser.
-- [Cheatsheet (PDF)](/docs/lark_cheatsheet.pdf)
-- Blog post: [How to write a DSL with Lark](http://blog.erezsh.com/how-to-write-a-dsl-in-python-with-lark/)
-- [Forum @googlegroups](https://groups.google.com/forum/#!forum/lark-parser)
-- [Gitter chat](https://gitter.im/lark-parser/Lobby) (New)
 
 
-### Install Lark
+### Install pushdown
 
     $ pip install pushdown
 
-Lark has no dependencies.
+Pushdown has no dependencies.
 
 
 ### Syntax Highlighting (new)
 
 Lark now provides syntax highlighting for its grammar files (\*.lark):
 
-- [Sublime Text & TextMate](https://github.com/lark-parser/lark_syntax)
-- [vscode](https://github.com/lark-parser/vscode-lark)
+- [Sublime Text & TextMate](https://github.com/evandroforks/lark_syntax)
 
 
 ### Hello World
@@ -195,7 +195,7 @@ If you're interested in taking one of these on, let me know and I will provide m
 
 ## Donate
 
-See: https://github.com/lark-parser/lark#donate
+For the original project called `lark-parser`, see: https://github.com/lark-parser/lark#donate
 
 
 ## Contact
