@@ -188,7 +188,7 @@ There are many ways you can help the project:
 * Write new grammars for Lark's library
 * Write a blog post introducing Lark to your audience
 * Port Lark to another language
-* Help me with code developemnt
+* Help me with code development
 
 If you're interested in taking one of these on, let me know and I will provide more details and assist you in the process.
 
@@ -203,5 +203,21 @@ For the original project called `lark-parser`, see: https://github.com/lark-pars
 For the original project called `lark-parser`, see: https://github.com/lark-parser/lark#contact
 
 For this fork project called `pushdown`,
-open a new issue on:
+just open a new issue on:
 https://github.com/evandrocoan/pushdown/issues
+
+
+## Sublime Text Dependency
+
+To use this as a Package Control Dependency https://packagecontrol.io/docs/dependencies create
+this `dependencies.json` file on the root of your Package:
+```json
+{
+    "*": {
+        "*": [
+            "PushdownParser"
+        ]
+    }
+}
+```
+
