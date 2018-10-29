@@ -1,12 +1,27 @@
 # Pushdown - a modern parsing library for Python
 
+Parse any context-free grammar,
+FAST and EASY!
+
 This project is a fork from https://github.com/lark-parser/lark,
 and the new name transition still in progress.
 Then,
 until this process is complete,
 you should see the name `Lark` several places.
 
-Parse any context-free grammar, FAST and EASY!
+I forked it and released it with a new name because I did a few changes which breaks
+compatibility with old versions of lark and I use these changes in other projects.
+Then,
+these changes would not be welcome on the upstream (lark-parser) breaking everybody else
+builds and I need to distribute these new breaking changes for my other projects.
+
+Despite these small changes,
+I still keep this repository up to date with the latest changes from the upstream (lark-parser),
+using [https://backstroke.us](https://backstroke.us) to continually fetch new updates,
+and merge them back as soon as possible.
+
+And when a got a bunch of free time,
+I also still sending back to the upstream (lark-parser) new changes or fixes which could be introduced back on the lark main repository.
 
 **Beginners**:
 Lark is not just another parser.
