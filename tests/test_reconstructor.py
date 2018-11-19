@@ -1,8 +1,8 @@
 import json
 import unittest
 from unittest import TestCase
-from lark import Lark
-from lark.reconstruct import Reconstructor
+from pushdown import Lark
+from pushdown.reconstruct import Reconstructor
 
 
 common = """

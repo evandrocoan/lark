@@ -1,8 +1,8 @@
-# Lark Tutorial - JSON parser
+# Pushdown Tutorial - JSON parser
 
-Lark is a parser - a program that accepts a grammar and text, and produces a structured tree that represents that text.
+Pushdown is a parser - a program that accepts a grammar and text, and produces a structured tree that represents that text.
 
-In this tutorial we will write a JSON parser in Lark, and explore Lark's various features in the process.
+In this tutorial we will write a JSON parser in Pushdown, and explore Pushdown's various features in the process.
 
 It has 5 parts.
 
@@ -18,7 +18,7 @@ Knowledge assumed:
 
 ## Part 1 - The Grammar
 
-Lark accepts its grammars in a format called [EBNF](https://www.wikiwand.com/en/Extended_Backus%E2%80%93Naur_form). It basically looks like this:
+Pushdown accepts its grammars in a format called [EBNF](https://www.wikiwand.com/en/Extended_Backus%E2%80%93Naur_form). It basically looks like this:
 
     rule_name : list of rules and TERMINALS to match
               | another possible list of items
@@ -55,9 +55,9 @@ A quick explanation of the syntax:
  - rule\* means *any amount*. That means, zero or more instances of that rule.
  - [rule] means *optional*. That means zero or one instance of that rule.
 
-Lark also supports the rule+ operator, meaning one or more instances. It also supports the rule? operator which is another way to say *optional*.
+Pushdown also supports the rule+ operator, meaning one or more instances. It also supports the rule? operator which is another way to say *optional*.
 
-Of course, we still haven't defined "STRING" and "NUMBER". Luckily, both these literals are already defined in Lark's common library:
+Of course, we still haven't defined "STRING" and "NUMBER". Luckily, both these literals are already defined in Pushdown's common library:
 
     %import common.ESCAPED_STRING   -> STRING
     %import common.SIGNED_NUMBER    -> NUMBER
@@ -77,9 +77,9 @@ By the way, if you're curious what these terminals signify, they are roughly equ
     STRING : /".*?(?<!\\)"/
     %ignore /[ \t\n\f\r]+/
 
-Lark will accept this, if you really want to complicate your life :)
+Pushdown will accept this, if you really want to complicate your life :)
 
-(You can find the original definitions in [common.lark](/lark/grammars/common.lark).)
+(You can find the original definitions in [common.lark](/source/pushdown/grammars/common.lark).)
 
 Notice that terminals are written in UPPER-CASE, while rules are written in lower-case.
 I'll touch more on the differences between rules and terminals later.
@@ -88,10 +88,10 @@ I'll touch more on the differences between rules and terminals later.
 
 Once we have our grammar, creating the parser is very simple.
 
-We simply instantiate Lark, and tell it to accept a "value":
+We simply instantiate Pushdown, and tell it to accept a "value":
 
 ```python
-from lark import Lark
+from pushdown import Lark
 json_parser = Lark(r"""
     value: dict
          | list
@@ -130,11 +130,11 @@ value
           value	3.14
 ```
 
-As promised, Lark automagically creates a tree that represents the parsed text.
+As promised, Pushdown automagically creates a tree that represents the parsed text.
 
 But something is suspiciously missing from the tree. Where are the curly braces, the commas and all the other punctuation literals?
 
-Lark automatically filters out literals from the tree, based on the following criteria:
+Pushdown automatically filters out literals from the tree, based on the following criteria:
 
 - Filter out string literals without a name, or with a name that starts with an underscore.
 - Keep regexps, even unnamed ones, unless their name starts with an underscore.
@@ -171,7 +171,7 @@ I'll present the solution, and then explain it:
 Here is the new grammar:
 
 ```python
-from lark import Lark
+from pushdown import Lark
 json_parser = Lark(r"""
     ?value: dict
           | list
@@ -224,7 +224,7 @@ A transformer is a class with methods corresponding to branch names. For each br
 So let's write a partial transformer, that handles lists and dictionaries:
 
 ```python
-from lark import Transformer
+from pushdown import Transformer
 
 class MyTransformer(Transformer):
     def list(self, items):
@@ -247,7 +247,7 @@ This is pretty close. Let's write a full transformer that can handle the termina
 Also, our definitions of list and dict are a bit verbose. We can do better:
 
 ```python
-from lark import Transformer
+from pushdown import Transformer
 
 class TreeToJson(Transformer):
     def string(self, (s,)):
@@ -281,7 +281,7 @@ By now, we have a fully working JSON parser, that can accept a string of JSON, a
 
 But how fast is it?
 
-Now, of course there are JSON libraries for Python written in C, and we can never compete with them. But since this is applicable to any parser you would write in Lark, let's see how far we can take this.
+Now, of course there are JSON libraries for Python written in C, and we can never compete with them. But since this is applicable to any parser you would write in Pushdown, let's see how far we can take this.
 
 The first step for optimizing is to have a benchmark. For this benchmark I'm going to take data from [json-generator.com/](http://www.json-generator.com/). I took their default suggestion and changed it to 5000 objects. The result is a 6.6MB sparse JSON file.
 
@@ -289,7 +289,7 @@ Our first program is going to be just a concatenation of everything we've done s
 
 ```python
 import sys
-from lark import Lark, Transformer
+from pushdown import Lark, Transformer
 
 json_grammar = r"""
     ?value: dict
@@ -350,7 +350,7 @@ Well, turns out there's quite a bit we can do about it!
 
 ### Step 2 - LALR(1)
 
-So far we've been using the Earley algorithm, which is the default in Lark. Earley is powerful but slow. But it just so happens that our grammar is LR-compatible, and specifically LALR(1) compatible.
+So far we've been using the Earley algorithm, which is the default in Pushdown. Earley is powerful but slow. But it just so happens that our grammar is LR-compatible, and specifically LALR(1) compatible.
 
 So let's switch to LALR(1) and see what happens:
 
@@ -365,11 +365,11 @@ json_parser = Lark(json_grammar, start='value', parser='lalr')
 
 Ah, that's much better. The resulting JSON is of course exactly the same. You can run it for yourself and see.
 
-It's important to note that not all grammars are LR-compatible, and so you can't always switch to LALR(1). But there's no harm in trying! If Lark lets you build the grammar, it means you're good to go.
+It's important to note that not all grammars are LR-compatible, and so you can't always switch to LALR(1). But there's no harm in trying! If Pushdown lets you build the grammar, it means you're good to go.
 
 ### Step 3 - Tree-less LALR(1)
 
-So far, we've built a full parse tree for our JSON, and then transformed it. It's a convenient method, but it's not the most efficient in terms of speed and memory. Luckily, Lark lets us avoid building the tree when parsing with LALR(1).
+So far, we've built a full parse tree for our JSON, and then transformed it. It's a convenient method, but it's not the most efficient in terms of speed and memory. Luckily, Pushdown lets us avoid building the tree when parsing with LALR(1).
 
 Here's the way to do it:
 
@@ -397,7 +397,7 @@ As a general practice, it's recommended to work with parse trees, and only skip 
 
 PyPy is a JIT engine for running Python, and it's designed to be a drop-in replacement.
 
-Lark is written purely in Python, which makes it very suitable for PyPy.
+Pushdown is written purely in Python, which makes it very suitable for PyPy.
 
 Let's get some free performance:
 
@@ -419,9 +419,9 @@ I measured memory consumption using a little script called [memusg](https://gist
 
 | Code | CPython Time | PyPy Time | CPython Mem | PyPy Mem
 |:-----|:-------------|:------------|:----------|:---------
-| Lark - Earley *(with lexer)* | 42s | 4s | 1167M | 608M |
-| Lark - LALR(1) | 8s | 1.53s | 453M | 266M |
-| Lark - LALR(1) tree-less | 4.76s | 1.23s | 70M | 134M |
+| Pushdown - Earley *(with lexer)* | 42s | 4s | 1167M | 608M |
+| Pushdown - LALR(1) | 8s | 1.53s | 453M | 266M |
+| Pushdown - LALR(1) tree-less | 4.76s | 1.23s | 70M | 134M |
 | PyParsing ([Parser](http://pyparsing.wikispaces.com/file/view/jsonParser.py)) | 32s | 3.53s | 443M | 225M |
 | funcparserlib ([Parser](https://github.com/vlasovskikh/funcparserlib/blob/master/funcparserlib/tests/json.py)) | 8.5s | 1.3s | 483M | 293M |
 | Parsimonious ([Parser](https://gist.githubusercontent.com/reclosedev/5222560/raw/5e97cf7eb62c3a3671885ec170577285e891f7d5/parsimonious_json.py)) | ? | 5.7s | ? | 1545M |
@@ -429,15 +429,15 @@ I measured memory consumption using a little script called [memusg](https://gist
 
 I added a few other parsers for comparison. PyParsing and funcparselib fair pretty well in their memory usage (they don't build a tree), but they can't compete with the run-time speed of LALR(1).
 
-These benchmarks are for Lark's alpha version. I already have several optimizations planned that will significantly improve run-time speed.
+These benchmarks are for Pushdown's alpha version. I already have several optimizations planned that will significantly improve run-time speed.
 
 Once again, shout-out to PyPy for being so effective.
 
 ## Afterword
 
-This is the end of the tutorial. I hoped you liked it and learned a little about Lark.
+This is the end of the tutorial. I hoped you liked it and learned a little about Pushdown.
 
-To see what else you can do with Lark, check out the [examples](/examples).
+To see what else you can do with Pushdown, check out the [examples](/examples).
 
 For questions or any other subject, feel free to email me at erezshin at gmail dot com.
 

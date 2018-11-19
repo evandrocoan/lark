@@ -8,7 +8,7 @@ import codecs
 
 logging.basicConfig(level=logging.INFO)
 
-from lark.tools.nearley import create_code_for_nearley_grammar, main as nearley_tool_main
+from pushdown.tools.nearley import create_code_for_nearley_grammar, main as nearley_tool_main
 
 TEST_PATH    = os.path.abspath(os.path.dirname(__file__))
 NEARLEY_PATH = os.path.join(TEST_PATH, 'nearley')

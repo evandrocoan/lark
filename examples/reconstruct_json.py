@@ -7,8 +7,8 @@
 
 import json
 
-from lark import Lark
-from lark.reconstruct import Reconstructor
+from pushdown import Lark
+from pushdown.reconstruct import Reconstructor
 
 from .json_parser import json_grammar
 

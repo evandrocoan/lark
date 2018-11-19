@@ -17,10 +17,10 @@ from io import (
 
 logging.basicConfig(level=logging.INFO)
 
-from lark.lark import Lark
-from lark.exceptions import GrammarError, ParseError, UnexpectedToken, UnexpectedInput
-from lark.tree import Tree
-from lark.visitors import Transformer
+from pushdown.pushdown import Lark
+from pushdown.exceptions import GrammarError, ParseError, UnexpectedToken, UnexpectedInput
+from pushdown.tree import Tree
+from pushdown.visitors import Transformer
 
 __path__ = os.path.dirname(__file__)
 def _read(n, *args):

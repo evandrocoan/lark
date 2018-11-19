@@ -5,8 +5,8 @@ from unittest import TestCase
 import copy
 import pickle
 
-from lark.tree import Tree
-from lark.visitors import Transformer, Interpreter, visit_children_decor, v_args
+from pushdown.tree import Tree
+from pushdown.visitors import Transformer, Interpreter, visit_children_decor, v_args
 
 
 class TestTrees(TestCase):

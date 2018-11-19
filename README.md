@@ -24,7 +24,7 @@ And when a got a bunch of free time,
 I also still sending back to the upstream (lark-parser) new changes or fixes which could be introduced back on the lark main repository.
 
 **Beginners**:
-Lark is not just another parser.
+Pushdown is not just another parser.
 It can parse any grammar you throw at it,
 no matter how complicated or ambiguous,
 and do so efficiently.
@@ -32,11 +32,11 @@ It also constructs a parse-tree for you,
 without additional code on your part.
 
 **Experts**:
-Lark lets you choose between Earley and LALR(1),
+Pushdown lets you choose between Earley and LALR(1),
 to trade-off power and speed.
 It also contains a CYK parser and unique features such as a contextual-lexer.
 
-Lark can:
+Pushdown can:
 
  - Parse all context-free grammars, and handle all ambiguity
  - Build a parse-tree automagically, no construction code required
@@ -47,7 +47,7 @@ Lark can:
 And many more features. Read ahead and find out.
 
 Most importantly,
-Lark will save you time and prevent you from getting parsing headaches.
+Pushdown will save you time and prevent you from getting parsing headaches.
 
 
 ### Quick links
@@ -64,7 +64,7 @@ Pushdown has no dependencies.
 
 ### Syntax Highlighting (new)
 
-Lark now provides syntax highlighting for its grammar files (\*.lark):
+Pushdown now provides syntax highlighting for its grammar files (\*.lark):
 
 - [Sublime Text & TextMate](https://github.com/evandroforks/lark_syntax)
 
@@ -74,7 +74,7 @@ Lark now provides syntax highlighting for its grammar files (\*.lark):
 Here is a little program to parse "Hello, World!" (Or any other similar phrase):
 
 ```python
-from lark import Lark
+from pushdown import Lark
 
 l = Lark('''start: WORD "," WORD "!"
 
@@ -91,12 +91,12 @@ And the output is:
 Tree(start, [Token(WORD, 'Hello'), Token(WORD, 'World')])
 ```
 
-Notice punctuation doesn't appear in the resulting tree. It's automatically filtered away by Lark.
+Notice punctuation doesn't appear in the resulting tree. It's automatically filtered away by Pushdown.
 
 
 ### Fruit flies like bananas
 
-Lark is great at handling ambiguity. Let's parse the phrase "fruit flies like bananas":
+Pushdown is great at handling ambiguity. Let's parse the phrase "fruit flies like bananas":
 
 ![fruitflies.png](examples/fruitflies.png)
 
@@ -129,7 +129,7 @@ See the full list of [features in the wiki](https://github.com/erezsh/lark/wiki/
 
 #### Performance comparison
 
-Lark is the fastest and lightest (lower is better)
+Pushdown is the fastest and lightest (lower is better)
 
 ![Run-time Comparison](docs/comparison_runtime.png)
 
@@ -145,7 +145,7 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
 
 | Library | Algorithm | Grammar | Builds tree? | Supports ambiguity? | Can handle every CFG? | Line/Column tracking | Generates Stand-alone
 |:--------|:----------|:----|:--------|:------------|:------------|:----------|:----------
-| **Lark** | Earley/LALR(1) | EBNF | Yes! | Yes! | Yes! | Yes! | Yes! (LALR only) |
+| **Pushdown** | Earley/LALR(1) | EBNF | Yes! | Yes! | Yes! | Yes! | Yes! (LALR only) |
 | [PLY](http://www.dabeaz.com/ply/) | LALR(1) | BNF | No | No | No | No | No |
 | [PyParsing](http://pyparsing.wikispaces.com/) | PEG | Combinators | No | No | No\* | No | No |
 | [Parsley](https://pypi.python.org/pypi/Parsley) | PEG | EBNF | No | No | No\* | No | No |
@@ -157,23 +157,14 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
 (\* *PEGs cannot handle non-deterministic grammars. Also, according to Wikipedia, it remains unanswered whether PEGs can really parse all deterministic CFGs*)
 
 
-### Projects using Lark
+### How to use Nearley grammars in Pushdown
 
- - [mappyfile](https://github.com/geographika/mappyfile) - a MapFile parser for working with MapServer configuration
- - [pytreeview](https://gitlab.com/parmenti/pytreeview) - a lightweight tree-based grammar explorer
- - [tartiflette](https://github.com/dailymotion/tartiflette) - a GraphQL engine by Dailymotion (Lark is used to parse the GraphQL schemas definitions)
-
-Using Lark? Send me a message and I'll add your project!
-
-
-### How to use Nearley grammars in Lark
-
-Lark comes with a tool to convert grammars from [Nearley](https://github.com/Hardmath123/nearley), a popular Earley library for Javascript. It uses [Js2Py](https://github.com/PiotrDabkowski/Js2Py) to convert and run the Javascript postprocessing code segments.
+Pushdown comes with a tool to convert grammars from [Nearley](https://github.com/Hardmath123/nearley), a popular Earley library for Javascript. It uses [Js2Py](https://github.com/PiotrDabkowski/Js2Py) to convert and run the Javascript postprocessing code segments.
 
 Here's an example:
 ```bash
 git clone https://github.com/Hardmath123/nearley
-python -m lark.tools.nearley nearley/examples/calculator/arithmetic.ne main nearley > ncalc.py
+python -m pushdown.tools.nearley nearley/examples/calculator/arithmetic.ne main nearley > ncalc.py
 ```
 
 You can use the output as a regular python module:
@@ -187,22 +178,22 @@ You can use the output as a regular python module:
 
 ## License
 
-Lark uses the [MIT license](LICENSE).
+Pushdown uses the [MIT license](LICENSE).
 
 (The standalone tool is under GPL2)
 
 
 ## Contribute
 
-Lark is currently accepting pull-requests.
+Pushdown is currently accepting pull-requests.
 
 There are many ways you can help the project:
 
 * Help solve issues
 * Improve the documentation
-* Write new grammars for Lark's library
-* Write a blog post introducing Lark to your audience
-* Port Lark to another language
+* Write new grammars for Pushdown's library
+* Write a blog post introducing Pushdown to your audience
+* Port Pushdown to another language
 * Help me with code development
 
 If you're interested in taking one of these on, let me know and I will provide more details and assist you in the process.

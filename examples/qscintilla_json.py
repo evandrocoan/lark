@@ -14,7 +14,7 @@ from PyQt5.Qt import *  # noqa
 from PyQt5.Qsci import QsciScintilla
 from PyQt5.Qsci import QsciLexerCustom
 
-from lark import Lark
+from pushdown import Lark
 
 
 class LexerJson(QsciLexerCustom):

@@ -1,15 +1,15 @@
 #
-# This example demonstrates using Lark with a custom lexer.
+# This example demonstrates using Pushdown with a custom lexer.
 #
-# You can use a custom lexer to tokenize text when the lexers offered by Lark
+# You can use a custom lexer to tokenize text when the lexers offered by Pushdown
 # are too slow, or not flexible enough.
 #
 # You can also use it (as shown in this example) to tokenize streams of objects.
 #
 
 
-from lark import Lark, Transformer, v_args
-from lark.lexer import Lexer, Token
+from pushdown import Lark, Transformer, v_args
+from pushdown.lexer import Lexer, Token
 
 class TypeLexer(Lexer):
     def __init__(self, lexer_conf):
@@ -49,7 +49,7 @@ def test():
     res = ParseToDict().transform(tree)
 
     print('-->')
-    print(res) # prints {'alice': [1, 27, 3], 'bob': [4], 'carrie': [], 'dan': [8, 6]} 
+    print(res) # prints {'alice': [1, 27, 3], 'bob': [4], 'carrie': [], 'dan': [8, 6]}
 
 
 if __name__ == '__main__':

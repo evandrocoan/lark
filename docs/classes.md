@@ -1,18 +1,18 @@
 # Classes - Reference
 
-This page details the important classes in Lark.
+This page details the important classes in Pushdown.
 
 ----
 
-## Lark
+## Pushdown
 
-The Lark class is the main interface for the library. It's mostly a thin wrapper for the many different parsers, and for the tree constructor.
+The Pushdown class is the main interface for the library. It's mostly a thin wrapper for the many different parsers, and for the tree constructor.
 
 ### Methods
 
 #### \_\_init\_\_(self, grammar, **options)
 
-The Lark class accepts a grammar string or file object, and keyword options:
+The Pushdown class accepts a grammar string or file object, and keyword options:
 
 * start - The symbol in the grammar that begins the parse (Default: `"start"`)
 
@@ -76,7 +76,7 @@ Returns all nodes of the tree whose data equals the given data.
 
 #### iter_subtrees(self)
 
-Iterates over all the subtrees, never returning to the same node twice (Lark's parse-tree is actually a DAG)
+Iterates over all the subtrees, never returning to the same node twice (Pushdown's parse-tree is actually a DAG)
 
 #### \_\_eq\_\_, \_\_hash\_\_
 
@@ -86,11 +86,11 @@ Trees can be hashed and compared.
 
 ## Transformers & Visitors
 
-Transformers & Visitors provide a convenient interface to process the parse-trees that Lark returns.
+Transformers & Visitors provide a convenient interface to process the parse-trees that Pushdown returns.
 
 They are used by inheriting from the correct class (visitor or transformer), and implementing methods corresponding to the rule you wish to process. Each methods accepts the children as an argument. That can be modified using the `v-args` decorator, which allows to inline the arguments (akin to `*args`), or add the tree `meta` property as an argument.
 
-See: https://github.com/evandrocoan/pushdown/blob/master/lark/visitors.py
+See: https://github.com/evandrocoan/pushdown/blob/master/source/pushdown/visitors.py
 
 ### Visitors
 
@@ -128,7 +128,7 @@ Transformers can be chained into a new transformer by using multiplication.
 
 **Example:**
 ```python
-from lark import Tree, Transformer
+from pushdown import Tree, Transformer
 
 class EvalExpressions(Transformer):
     def expr(self, args):

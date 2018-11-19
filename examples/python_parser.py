@@ -7,8 +7,8 @@ import os, os.path
 from io import open
 import glob, time
 
-from lark import Lark
-from lark.indenter import Indenter
+from pushdown import Lark
+from pushdown.indenter import Indenter
 
 # __path__ = os.path.dirname(__file__)
 

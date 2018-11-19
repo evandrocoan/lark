@@ -17,7 +17,7 @@ from .parser_frontends import get_frontend
 log = getLogger('pushdown')
 
 class LarkOptions(object):
-    """Specifies the options for Lark
+    """Specifies the options for Pushdown
 
     """
     OPTIONS_DOC = """
@@ -40,10 +40,10 @@ class LarkOptions(object):
         transformer - Applies the transformer to every parse tree
         debug - Affects verbosity (default: False)
         keep_all_tokens - Don't automagically remove "punctuation" tokens (default: False)
-        cache_grammar - Cache the Lark grammar (Default: False)
+        cache_grammar - Cache the Pushdown grammar (Default: False)
         postlex - Lexer post-processing (Default: None) Only works with the standard and contextual lexers.
         start - The start symbol (Default: start)
-        profile - Measure run-time usage in Lark. Read results from the profiler proprety (Default: False)
+        profile - Measure run-time usage in Pushdown. Read results from the profiler proprety (Default: False)
         propagate_positions - Propagates [line, column, end_line, end_column] attributes into all tree branches.
         lexer_callbacks - Dictionary of callbacks for the lexer. May alter tokens during lexing. Use with caution.
     """
