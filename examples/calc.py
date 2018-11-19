@@ -2,7 +2,7 @@
 # This example shows how to write a basic calculator with variables.
 #
 
-from lark import Lark, Transformer, v_args
+from pushdown import Lark, Transformer, v_args
 
 
 try:

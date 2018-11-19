@@ -3,7 +3,7 @@
 #
 
 import sys
-from lark import Lark, tree
+from pushdown import Lark, tree
 
 grammar = """
     sentence: noun verb noun        -> simple

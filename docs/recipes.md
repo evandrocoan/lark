@@ -19,7 +19,7 @@ It only works with the standard and contextual lexers.
 ### Example 1: Replace string values with ints for INT tokens
 
 ```python
-from lark import Lark, Token
+from pushdown import Lark, Token
 
 def tok_to_int(tok):
     return Token.new_borrow_pos(tok.type, int(tok), tok)
@@ -42,7 +42,7 @@ Tree(start, [Token(INT, 3), Token(INT, 14), Token(INT, 159)])
 
 ### Example 2: Collect all comments
 ```python
-from lark import Lark
+from pushdown import Lark
 
 comments = []
 
@@ -54,7 +54,7 @@ parser = Lark("""
     %import common (INT, WS)
     %ignore COMMENT
     %ignore WS
-""", parser="lalr", lexer_callbacks={'COMMENT': comments.append}) 
+""", parser="lalr", lexer_callbacks={'COMMENT': comments.append})
 
 parser.parse("""
 1 2 3  # hello

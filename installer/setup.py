@@ -41,14 +41,14 @@ setup(
         'debug':  ["debug_tools"]
     },
 
-    package_data = { '': ['*.md', '*.lark'] },
+    package_data = { '': ['*.md', '*.pushdown'] },
 
     test_suite = 'tests.__main__',
 
     # metadata for upload to PyPI
     author = "Erez Shinan",
     author_email = "erezshin@gmail.com",
-    description = "A fork form lark-parser, a modern parsing library",
+    description = "A fork from lark-parser, a modern parsing library",
     license = "MIT",
     keywords = "Earley LALR parser parsing ast",
     url = "https://github.com/evandrocoan/pushdown",
@@ -74,4 +74,3 @@ setup(
         'Operating System :: OS Independent',
     ],
 )
-

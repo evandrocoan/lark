@@ -12,7 +12,7 @@
 #
 
 
-from lark import Lark
+from pushdown import Lark
 
 parser = Lark(r"""
         start: _NL? section+

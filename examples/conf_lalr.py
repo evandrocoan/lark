@@ -13,7 +13,7 @@
 # See examples/conf_earley.py for an example of that approach.
 #
 
-from lark import Lark
+from pushdown import Lark
 
 parser = Lark(r"""
         start: _NL? section+

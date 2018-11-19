@@ -212,7 +212,7 @@ Returns a pretty string pinpointing the error in the text, with `span` amount of
 
 Allows you to detect what's wrong in the input text by matching against example errors.
 
-Accepts the parse function (usually `lark_instance.parse`) and a dictionary of `{'example_string': value}`.
+Accepts the parse function (usually `pushdown_instance.parse`) and a dictionary of `{'example_string': value}`.
 
 The function will iterate the dictionary until it finds a matching error, and return the corresponding value.
 

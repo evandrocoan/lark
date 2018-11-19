@@ -7,7 +7,7 @@
 
 import sys
 
-from lark import Lark, Transformer, v_args
+from pushdown import Lark, Transformer, v_args
 
 json_grammar = r"""
     ?start: value

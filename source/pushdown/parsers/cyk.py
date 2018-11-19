@@ -91,14 +91,14 @@ class Parser(object):
         self.grammar = to_cnf(Grammar(rules))
         self.start = NT(start)
 
-    def _to_rule(self, lark_rule):
-        """Converts a lark rule, (lhs, rhs, callback, options), to a Rule."""
-        assert isinstance(lark_rule.origin, NT)
-        assert all(isinstance(x, Symbol) for x in lark_rule.expansion)
+    def _to_rule(self, pushdown_rule):
+        """Converts a pushdown rule, (lhs, rhs, callback, options), to a Rule."""
+        assert isinstance(pushdown_rule.origin, NT)
+        assert all(isinstance(x, Symbol) for x in pushdown_rule.expansion)
         return Rule(
-            lark_rule.origin, lark_rule.expansion,
-            weight=lark_rule.options.priority if lark_rule.options and lark_rule.options.priority else 0,
-            alias=lark_rule.alias)
+            pushdown_rule.origin, pushdown_rule.expansion,
+            weight=pushdown_rule.options.priority if pushdown_rule.options and pushdown_rule.options.priority else 0,
+            alias=pushdown_rule.alias)
 
     def parse(self, tokenized):  # pylint: disable=invalid-name
         """Parses input, which is a list of tokens."""
@@ -110,7 +110,7 @@ class Parser(object):
         return self._to_tree(revert_cnf(parse))
 
     def _to_tree(self, rule_node):
-        """Converts a RuleNode parse tree to a lark Tree."""
+        """Converts a RuleNode parse tree to a pushdown Tree."""
         orig_rule = self.orig_rules[rule_node.rule.alias]
         children = []
         for child in rule_node.children:

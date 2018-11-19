@@ -23,7 +23,7 @@ log = getLogger(__name__)
 __path__ = os.path.dirname(__file__)
 IMPORT_PATHS = [os.path.join(__path__, 'grammars')]
 
-EXT = '.lark'
+EXT = '.pushdown'
 
 _RE_FLAGS = 'imslux'
 
@@ -530,7 +530,7 @@ def import_grammar(grammar_path, base_paths=[]):
 def import_from_grammar_into_namespace(grammar, namespace, aliases):
     imported_terms = dict(grammar.term_defs)
     imported_rules = {n:(n,t,o) for n,t,o in grammar.rule_defs}
-    
+
     term_defs = []
     rule_defs = []
 

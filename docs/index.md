@@ -22,8 +22,7 @@ $ pip install pushdown
 
 #### Syntax Highlighting
 
-- [Sublime Text & TextMate](https://github.com/evandroforks/lark_syntax)
-- [Visual Studio Code](https://github.com/lark-parser/vscode-lark) (Or install through the vscode plugin system)
+- [Sublime Text & TextMate](https://github.com/evandrocoan/pushdown_syntax)
 
 -----
 

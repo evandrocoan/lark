@@ -122,7 +122,7 @@ COMMENT: "#" /[^\n]/*
 ```
 ### %import
 
-Allows to import terminals from lark grammars.
+Allows to import terminals from pushdown grammars.
 
 Future versions will allow to import rules and macros.
 
@@ -132,9 +132,9 @@ Future versions will allow to import rules and macros.
 %import <module> (<TERM1> <TERM2>)
 ```
 
-If the module path is absolute, Lark will attempt to load it from the built-in directory (currently, only `common.lark` is available).
+If the module path is absolute, Lark will attempt to load it from the built-in directory (currently, only `common.pushdown` is available).
 
-If the module path is relative, such as `.path.to.file`, Lark will attempt to load it from the current working directory. Grammars must have the `.lark` extension.
+If the module path is relative, such as `.path.to.file`, Lark will attempt to load it from the current working directory. Grammars must have the `.pushdown` extension.
 
 **Example:**
 ```perl

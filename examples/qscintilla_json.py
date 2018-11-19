@@ -73,8 +73,8 @@ class LexerJson(QsciLexerCustom):
             %ignore WS
         '''
 
-        self.lark = Lark(grammar, parser=None, lexer='standard')
-        # All tokens: print([t.name for t in self.lark.parser.lexer.tokens])
+        self.pushdown = Lark(grammar, parser=None, lexer='standard')
+        # All tokens: print([t.name for t in self.pushdown.parser.lexer.tokens])
 
     def defaultPaper(self, style):
         return QColor(39, 40, 34)
@@ -91,7 +91,7 @@ class LexerJson(QsciLexerCustom):
         last_pos = 0
 
         try:
-            for token in self.lark.lex(text):
+            for token in self.pushdown.lex(text):
                 ws_len = token.pos_in_stream - last_pos
                 if ws_len:
                     self.setStyling(ws_len, 0)    # whitespace

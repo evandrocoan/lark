@@ -5,7 +5,7 @@ import sys
 import codecs
 
 
-from lark import Lark, InlineTransformer
+from pushdown import Lark, InlineTransformer
 
 nearley_grammar = r"""
     start: (ruledef|directive)+
@@ -148,7 +148,7 @@ def create_code_for_nearley_grammar(g, start, builtin_path, folder_path):
     lark_g = '\n'.join(rule_defs)
     lark_g += '\n'+'\n'.join('!%s: %s' % item for item in n2l.extra_rules.items())
 
-    emit('from lark import Lark, Transformer')
+    emit('from pushdown import Lark, Transformer')
     emit()
     emit('grammar = ' + repr(lark_g))
     emit()
@@ -177,7 +177,7 @@ def main(fn, start, nearley_lib):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print("Reads Nearley grammar (with js functions) outputs an equivalent lark parser.")
+        print("Reads Nearley grammar (with js functions) outputs an equivalent pushdown parser.")
         print("Usage: %s <nearley_grammar_path> <start_rule> <nearley_lib_path>" % sys.argv[0])
         sys.exit(1)
 

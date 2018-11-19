@@ -64,9 +64,9 @@ Pushdown has no dependencies.
 
 ### Syntax Highlighting (new)
 
-Pushdown now provides syntax highlighting for its grammar files (\*.lark):
+Pushdown now provides syntax highlighting for its grammar files (\*.pushdown):
 
-- [Sublime Text & TextMate](https://github.com/evandroforks/lark_syntax)
+- [Sublime Text & TextMate](https://github.com/evandroforks/pushdown_syntax)
 
 
 ### Hello World
@@ -100,7 +100,7 @@ Pushdown is great at handling ambiguity. Let's parse the phrase "fruit flies lik
 
 ![fruitflies.png](examples/fruitflies.png)
 
-See more [examples in the wiki](https://github.com/erezsh/lark/wiki/Examples)
+See more [examples in the examples directory](examples)
 
 
 
@@ -121,8 +121,6 @@ See more [examples in the wiki](https://github.com/erezsh/lark/wiki/Examples)
  - Standard library of terminals (strings, numbers, names, etc.)
  - Import grammars from Nearley.js
  - And much more!
-
-See the full list of [features in the wiki](https://github.com/erezsh/lark/wiki/Features)
 
 
 ### Comparison to other libraries

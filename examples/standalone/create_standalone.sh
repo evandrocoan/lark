@@ -1,1 +1,1 @@
-python -m pushdown.tools.standalone json.lark > json_parser.py
+python -m pushdown.tools.standalone json.pushdown > json_parser.py

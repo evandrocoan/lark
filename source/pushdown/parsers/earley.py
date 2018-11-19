@@ -2,7 +2,7 @@
 
 # The parser uses a parse-forest to keep track of derivations and ambiguations.
 # When the parse ends successfully, a disambiguation stage resolves all ambiguity
-# (right now ambiguity resolution is not developed beyond the needs of lark)
+# (right now ambiguity resolution is not developed beyond the needs of pushdown)
 # Afterwards the parse tree is reduced (transformed) according to user callbacks.
 # I use the no-recursion version of Transformer, because the tree might be
 # deeper than Python's recursion limit (a bit absurd, but that's life)

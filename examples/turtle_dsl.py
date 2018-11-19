@@ -7,7 +7,7 @@ except NameError:
 
 import turtle
 
-from lark import Lark
+from pushdown import Lark
 
 turtle_grammar = """
     start: instruction+
