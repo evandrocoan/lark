@@ -2,9 +2,12 @@ from functools import wraps
 
 from .utils import smart_decorator
 from .tree import Tree
+from .logging import getLogger
 
 ###{standalone
 from inspect import getmembers, getmro
+
+log = getLogger(__name__)
 
 class Discard(Exception):
     pass
@@ -185,11 +188,16 @@ class Interpreter:
     Unlike Transformer and Visitor, the Interpreter doesn't automatically visit its sub-branches.
     The user has to explicitly call visit_children, or use the @visit_children_decor
     """
-    def visit(self, tree, parent):
+    def visit(self, tree, parent=None):
         tree.parent = parent
+        # log(1, "visiting tree: %s", tree )
+        # log(1, "visiting tree.data: %s", tree.data )
+        # log(1, "visiting tree.data: %s", repr(tree.data) )
+        # log(1, "visiting getattr(self, tree.data): %s", getattr(self, tree.data) )
+        # log(1, "visiting getattr(self, tree.data): %s", repr(getattr(self, tree.data)) )
         return getattr(self, tree.data)(tree)
 
-    def visit_children(self, tree):
+    def visit_children(self, tree, parent=None):
         return [self.visit(child, parent) if isinstance(child, Tree) else child
                 for child in tree.children]
 

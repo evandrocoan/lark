@@ -1,5 +1,5 @@
 from .tree import Tree
-from .visitors import Transformer, Visitor, v_args, Discard
+from .visitors import Transformer, Interpreter, Visitor, v_args, Discard
 from .visitors import InlineTransformer, inline_args   # XXX Deprecated
 from .exceptions import LarkError, ParseError, LexError, SyntaxErrors, GrammarError, UnexpectedToken, UnexpectedInput, UnexpectedCharacters
 from .lexer import Token
