@@ -2,6 +2,7 @@
 *.pyc
 /.tox
 /source/pushdown.egg-info/**
+*.pyo
 tags
 .vscode
 .ropeproject
