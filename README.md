@@ -220,7 +220,7 @@ this `dependencies.json` file on the root of your Package:
     "*": {
         "*": [
             "debugtools",
-            "PushdownParser"
+            "pushdownparser"
         ]
     }
 }
