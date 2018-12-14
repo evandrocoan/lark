@@ -2,9 +2,18 @@
 
 Parse any context-free grammar, FAST and EASY!
 
-**Beginners**: Lark is not just another parser. It can parse any grammar you throw at it, no matter how complicated or ambiguous, and do so efficiently. It also constructs a parse-tree for you, without additional code on your part.
+**Beginners**:
+Lark is not just another parser.
+It can parse any grammar you throw at it,
+no matter how complicated or ambiguous,
+and do so efficiently.
+It also constructs a parse-tree for you,
+without additional code on your part.
 
-**Experts**: Lark lets you choose between Earley and LALR(1), to trade-off power and speed. It also contains a CYK parser and unique features such as a contextual-lexer.
+**Experts**:
+Lark lets you choose between Earley and LALR(1),
+to trade-off power and speed.
+It also contains a CYK parser and unique features such as a contextual-lexer.
 
 Lark can:
 
@@ -16,7 +25,9 @@ Lark can:
 
 And many more features. Read ahead and find out.
 
-Most importantly, Lark will save you time and prevent you from getting parsing headaches.
+Most importantly,
+Lark will save you time and prevent you from getting parsing headaches.
+
 
 ### Quick links
 
@@ -27,13 +38,13 @@ Most importantly, Lark will save you time and prevent you from getting parsing h
 - [Forum @googlegroups](https://groups.google.com/forum/#!forum/lark-parser)
 - [Gitter chat](https://gitter.im/lark-parser/Lobby) (New)
 
+
 ### Install Lark
 
-    $ pip install lark-parser
+    $ pip install pushdown
 
 Lark has no dependencies.
 
-[![Build Status](https://travis-ci.org/lark-parser/lark.svg?branch=master)](https://travis-ci.org/lark-parser/lark)
 
 ### Syntax Highlighting (new)
 
@@ -67,6 +78,7 @@ Tree(start, [Token(WORD, 'Hello'), Token(WORD, 'World')])
 
 Notice punctuation doesn't appear in the resulting tree. It's automatically filtered away by Lark.
 
+
 ### Fruit flies like bananas
 
 Lark is great at handling ambiguity. Let's parse the phrase "fruit flies like bananas":
@@ -93,7 +105,6 @@ See more [examples in the wiki](https://github.com/erezsh/lark/wiki/Examples)
  - Automatic line & column tracking
  - Standard library of terminals (strings, numbers, names, etc.)
  - Import grammars from Nearley.js
- - Extensive test suite [![codecov](https://codecov.io/gh/erezsh/lark/branch/master/graph/badge.svg)](https://codecov.io/gh/erezsh/lark)
  - And much more!
 
 See the full list of [features in the wiki](https://github.com/erezsh/lark/wiki/Features)
@@ -113,6 +124,7 @@ Lark is the fastest and lightest (lower is better)
 Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more details on how the comparison was made.
 
 *Note: I really wanted to add PLY to the benchmark, but I couldn't find a working JSON parser anywhere written in PLY. If anyone can point me to one that actually works, I would be happy to add it!*
+
 
 #### Feature comparison
 
@@ -137,6 +149,7 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
  - [tartiflette](https://github.com/dailymotion/tartiflette) - a GraphQL engine by Dailymotion (Lark is used to parse the GraphQL schemas definitions)
 
 Using Lark? Send me a message and I'll add your project!
+
 
 ### How to use Nearley grammars in Lark
 
@@ -163,6 +176,7 @@ Lark uses the [MIT license](LICENSE).
 
 (The standalone tool is under GPL2)
 
+
 ## Contribute
 
 Lark is currently accepting pull-requests.
@@ -178,16 +192,16 @@ There are many ways you can help the project:
 
 If you're interested in taking one of these on, let me know and I will provide more details and assist you in the process.
 
+
 ## Donate
 
-If you like Lark and feel like donating, you can do so at my [patreon page](https://www.patreon.com/erezsh).
+See: https://github.com/lark-parser/lark#donate
 
-If you wish for a specific feature to get a higher priority, you can request it in a follow-up email, and I'll consider it favorably.
 
 ## Contact
 
-If you have any questions or want my assistance, you can email me at erezshin at gmail com.
+For the original project called `lark-parser`, see: https://github.com/lark-parser/lark#contact
 
-I'm also available for contract work.
-
- -- [Erez](https://github.com/erezsh)
+For this fork project called `pushdown`,
+open a new issue on:
+https://github.com/evandrocoan/pushdown/issues

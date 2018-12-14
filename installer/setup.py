@@ -1,12 +1,18 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import re
 from setuptools import setup
 
-__version__ ,= re.findall('__version__ = "(.*)"', open('lark/__init__.py').read())
+__version__ ,= re.findall('__version__ = "(.*)"', open('source/pushdown/__init__.py').read())
 
 setup(
-    name = "lark-parser",
+    name = "pushdown",
     version = __version__,
-    packages = ['lark', 'lark.parsers', 'lark.tools', 'lark.grammars'],
+    package_dir = {
+        '': 'source'
+    },
+    packages = ['pushdown', 'pushdown.parsers', 'pushdown.tools', 'pushdown.grammars'],
 
     requires = [],
     install_requires = [],
@@ -21,45 +27,30 @@ setup(
     # metadata for upload to PyPI
     author = "Erez Shinan",
     author_email = "erezshin@gmail.com",
-    description = "a modern parsing library",
+    description = "A fork form lark-parser, a modern parsing library",
     license = "MIT",
     keywords = "Earley LALR parser parsing ast",
-    url = "https://github.com/erezsh/lark",
-    download_url = "https://github.com/erezsh/lark/tarball/master",
-    long_description='''
-Lark is a modern general-purpose parsing library for Python.
-
-With Lark, you can parse any context-free grammar, efficiently, with very little code.
-
-Main Features:
- - Builds a parse-tree (AST) automagically, based on the structure of the grammar
- - Earley parser
-    - Can parse all context-free grammars
-    - Full support for ambiguous grammars
- - LALR(1) parser
-    - Fast and light, competitive with PLY
-    - Can generate a stand-alone parser
- - CYK parser, for highly ambiguous grammars
- - EBNF grammar
- - Unicode fully supported
- - Python 2 & 3 compatible
- - Automatic line & column tracking
- - Standard library of terminals (strings, numbers, names, etc.)
- - Import grammars from Nearley.js
- - Extensive test suite
- - And much more!
-''',
-
+    url = "https://github.com/evandrocoan/pushdown",
+    download_url = "https://github.com/evandrocoan/pushdown/archive/master.zip",
+    long_description = open('README.md').read(),
+    long_description_content_type='text/markdown',
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Topic :: Software Development :: Libraries :: Python Modules",
+        'Environment :: Console',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         "Topic :: Text Processing :: General",
         "Topic :: Text Processing :: Linguistic",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
+        'Operating System :: OS Independent',
     ],
-
 )
 

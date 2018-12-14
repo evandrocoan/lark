@@ -14,7 +14,7 @@ from .lexer import Lexer, TraditionalLexer
 from .parse_tree_builder import ParseTreeBuilder
 from .parser_frontends import get_frontend
 
-log = getLogger('lark')
+log = getLogger('pushdown')
 
 class LarkOptions(object):
     """Specifies the options for Lark

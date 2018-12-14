@@ -35,5 +35,5 @@ except ( ImportError, ValueError ):   # Python 3
         def isEnabledFor(self, level): pass
         def getChild(self, suffix): pass
 
-log = getLogger('lark', force=1)
+log = getLogger('pushdown', force=1)
 ###}
