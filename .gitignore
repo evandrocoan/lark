@@ -3,6 +3,7 @@
 /.tox
 /source/pushdown.egg-info/**
 *.pyo
+/lark_parser.egg-info/**
 tags
 .vscode
 .ropeproject

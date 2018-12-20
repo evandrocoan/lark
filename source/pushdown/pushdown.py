@@ -46,6 +46,7 @@ class LarkOptions(object):
         profile - Measure run-time usage in Pushdown. Read results from the profiler proprety (Default: False)
         propagate_positions - Propagates [line, column, end_line, end_column] attributes into all tree branches.
         lexer_callbacks - Dictionary of callbacks for the lexer. May alter tokens during lexing. Use with caution.
+        maybe_placeholders - Experimental feature. Instead of omitting optional rules (i.e. rule?), replace them with None
     """
     if __doc__:
         __doc__ += OPTIONS_DOC
@@ -67,6 +68,7 @@ class LarkOptions(object):
         self.propagate_positions = o.pop('propagate_positions', False)
         self.earley__predict_all = o.pop('earley__predict_all', False)
         self.lexer_callbacks = o.pop('lexer_callbacks', {})
+        self.maybe_placeholders = o.pop('maybe_placeholders', False)
 
         assert self.parser in ('earley', 'lalr', 'cyk', None)
 
@@ -184,7 +186,7 @@ class Lark:
     def _build_parser(self):
         self.parser_class = get_frontend(self.options.parser, self.options.lexer)
 
-        self._parse_tree_builder = ParseTreeBuilder(self.rules, self.options.tree_class, self.options.propagate_positions, self.options.keep_all_tokens, self.options.parser!='lalr')
+        self._parse_tree_builder = ParseTreeBuilder(self.rules, self.options.tree_class, self.options.propagate_positions, self.options.keep_all_tokens, self.options.parser!='lalr', self.options.maybe_placeholders)
         callback = self._parse_tree_builder.create_callback(self.options.transformer)
         if self.profiler:
             for f in dir(callback):
