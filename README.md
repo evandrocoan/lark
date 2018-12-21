@@ -211,6 +211,17 @@ just open a new issue on:
 https://github.com/evandrocoan/pushdown/issues
 
 
+## Unit Tests
+
+To run all Unit Tests (from python 2.7 up to the latest version of python),
+install Python 2.7 and tox.
+Then,
+run the command `tox` on the root of this project (where the main setup.py file is on).
+
+If you would like to only run the Unit Tests for Python version 2.7,
+you can run the command `tox -e py27`
+
+
 ## Sublime Text Dependency
 
 To use this as a Package Control Dependency https://packagecontrol.io/docs/dependencies create
