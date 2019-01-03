@@ -23,15 +23,15 @@ class WriteTokensTransformer(Transformer_InPlace):
     def __init__(self, tokens):
         self.tokens = tokens
 
-    def __default__(self, data, children, meta):
+    def __default__(self, tree, children):
         #  if not isinstance(t, MatchTree):
             #  return t
-        if not getattr(meta, 'match_tree', False):
-            return Tree(data, children)
+        if not getattr(tree.meta, 'match_tree', False):
+            return Tree(tree.data, children)
 
         iter_args = iter(children)
         to_write = []
-        for sym in meta.orig_expansion:
+        for sym in tree.meta.orig_expansion:
             if is_discarded_terminal(sym):
                 t = self.tokens[sym.name]
                 assert isinstance(t.pattern, PatternStr)
