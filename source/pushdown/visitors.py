@@ -1,4 +1,5 @@
 from functools import wraps
+import inspect
 
 from .utils import smart_decorator
 from .tree import Tree
@@ -29,6 +30,9 @@ class Transformer:
         try:
             f = getattr(self, tree.data)
         except AttributeError:
+            # 'co_argcount', self.__default__.__code__.co_argcount,
+            # 'co_varnames', self.__default__.__code__.co_varnames,
+            # print('__defaults__', inspect.getargspec( self.__default__ ) )
             return self.__default__(tree, children)
         else:
             if getattr(f, 'meta', False):
