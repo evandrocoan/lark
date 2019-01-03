@@ -1,12 +1,9 @@
 ## Lexer Implementation
 
 import re
-import sys
 
 from .utils import Str, classify, get_regexp_width, Py36, getLogger
 from .exceptions import UnexpectedCharacters, LexError
-
-from . errors import parser_errors
 
 log = getLogger(__name__)
 
@@ -159,11 +156,6 @@ class _Lex:
         newline_types = frozenset(newline_types)
         ignore_types = frozenset(ignore_types)
         line_ctr = LineCounter()
-        char_error_offset = 0
-        line_error_offset = 0
-        column_error_offset = 0
-        last_error_line = -1
-        original_stream = stream
 
         while line_ctr.char_pos < len(stream):
             lexer = self.lexer
@@ -192,24 +184,7 @@ class _Lex:
 
                 break
             else:
-                if last_error_line != line_ctr.line:
-                    parser_errors[-1].append( UnexpectedCharacters( original_stream,
-                            line_ctr.char_pos + char_error_offset,
-                            line_ctr.line + line_error_offset,
-                            line_ctr.column + column_error_offset,
-                            state=self.state
-                        )
-                    )
-
-                char_error_offset += 1
-                column_error_offset += 1
-
-                if stream[line_ctr.char_pos] == '\n':
-                    line_error_offset += 1
-                    column_error_offset = 0
-
-                last_error_line = line_ctr.line
-                stream = stream[0:line_ctr.char_pos] + stream[line_ctr.char_pos+1:]
+                raise UnexpectedCharacters(stream, line_ctr.char_pos, line_ctr.line, line_ctr.column, state=self.state)
 
 
 class UnlessCallback:

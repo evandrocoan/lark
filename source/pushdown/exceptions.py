@@ -23,17 +23,6 @@ class ParseError(LarkError):
 class LexError(LarkError):
     pass
 
-class SyntaxErrors(LarkError):
-    def __init__(self, exceptions, messages=""):
-        self.exceptions = exceptions
-        if messages:
-            self.messages = messages
-        else:
-            self.messages = '\n'.join(str(exception) for exception in exceptions)
-
-    def __str__(self):
-        return self.messages
-
 class UnexpectedInput(LarkError):
     pos_in_stream = None
 
