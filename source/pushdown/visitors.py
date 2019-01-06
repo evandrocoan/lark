@@ -4,6 +4,7 @@ import inspect
 from .utils import smart_decorator
 from .tree import Tree
 from .logging import getLogger
+from .exceptions import VisitError, GrammarError
 
 ###{standalone
 from inspect import getmembers, getmro
@@ -35,16 +36,21 @@ class Transformer:
             # print('__defaults__', inspect.getargspec( self.__default__ ) )
             return self.__default__(tree, children)
         else:
-            if getattr(f, 'meta', False):
-                return f(children, tree.meta)
-            elif getattr(f, 'inline', False):
-                return f(*children)
-            elif getattr(f, 'whole_tree', False):
-                if new_children is None:
+            try:
+                if getattr(f, 'meta', False):
+                    return f(children, tree.meta)
+                elif getattr(f, 'inline', False):
+                    return f(*children)
+                elif getattr(f, 'whole_tree', False):
+                    if new_children is not None:
+                        raise NotImplementedError("Doesn't work with the base Transformer class")
                     return f(tree)
-                raise NotImplementedError("Doesn't work with the base Transformer class")
-            else:
-                return f(children)
+                else:
+                    return f(children)
+            except GrammarError:
+                raise
+            except Exception as e:
+                raise VisitError('Error trying to process rule "%s":\n\n%s' % (tree.data, e))
 
     def _transform_children(self, tree):
         for c in tree.children:

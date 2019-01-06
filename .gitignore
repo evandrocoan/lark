@@ -3,6 +3,7 @@
 /.tox
 /source/pushdown.egg-info/**
 *.pyo
+/.tox
 /lark_parser.egg-info/**
 tags
 .vscode
