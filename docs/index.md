@@ -35,6 +35,8 @@ $ pip install pushdown
 * Tutorials
     * [How to write a DSL](http://blog.erezsh.com/how-to-write-a-dsl-in-python-with-lark/) - Implements a toy LOGO-like language with an interpreter
     * [How to write a JSON parser](json_tutorial.md)
+    * External
+        * [Program Synthesis is Possible](https://www.cs.cornell.edu/~asampson/blog/minisynth.html) - Creates a DSL for Z3
 * Guides
     * [How to use Lark](how_to_use.md)
 * Reference
