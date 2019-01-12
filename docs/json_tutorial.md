@@ -79,7 +79,8 @@ By the way, if you're curious what these terminals signify, they are roughly equ
 
 Pushdown will accept this, if you really want to complicate your life :)
 
-(You can find the original definitions in [common.pushdown](/source/pushdown/grammars/common.pushdown).)
+You can find the original definitions in [common.pushdown](/source/pushdown/grammars/common.pushdown).
+They're don't strictly adhere to [json.org](https://json.org/) - but our purpose here is to accept json, not validate it.
 
 Notice that terminals are written in UPPER-CASE, while rules are written in lower-case.
 I'll touch more on the differences between rules and terminals later.
