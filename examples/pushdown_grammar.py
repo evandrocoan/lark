@@ -1,15 +1,15 @@
-from lark import Lark
+from pushdown import Lark
 
-parser = Lark(open('examples/lark.lark'), parser="lalr")
+parser = Lark(open('examples/pushdown.pushdown'), parser="lalr")
 
 grammar_files = [
-    'examples/python2.lark',
-    'examples/python3.lark',
-    'examples/lark.lark',
-    'examples/relative-imports/multiples.lark',
-    'examples/relative-imports/multiple2.lark',
-    'examples/relative-imports/multiple3.lark',
-    'lark/grammars/common.lark',
+    'examples/python2.pushdown',
+    'examples/python3.pushdown',
+    'examples/pushdown.pushdown',
+    'examples/relative-imports/multiples.pushdown',
+    'examples/relative-imports/multiple2.pushdown',
+    'examples/relative-imports/multiple3.pushdown',
+    'source/pushdown/grammars/common.pushdown',
 ]
 
 def test():
