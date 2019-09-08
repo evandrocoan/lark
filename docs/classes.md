@@ -76,10 +76,14 @@ Returns all nodes of the tree whose data equals the given data.
 
 #### iter_subtrees(self)
 
+Depth-first iteration.
+
 Iterates over all the subtrees, never returning to the same node twice. Pushdown's
 parse-tree is actually a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph).
 
 #### iter_subtrees_topdown(self)
+
+Breadth-first iteration.
 
 Iterates over all the subtrees, return nodes in order like pretty() does.
 
@@ -123,7 +127,7 @@ There are two classes that implement the visitor interface:
 
 Transformers visit each node of the tree, and run the appropriate method on it according to the node's data.
 
-They work bottom-up, starting with the leaves and ending at the root of the tree.
+They work bottom-up (or: depth-first), starting with the leaves and ending at the root of the tree.
 
 Transformers can be used to implement map & reduce patterns.
 

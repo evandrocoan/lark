@@ -30,11 +30,12 @@ from .test_parser import (
         TestEarleyStandard,
         TestCykStandard,
         TestLalrContextual,
-        # TestEarleyScanless,
         TestEarleyDynamic,
+        TestLalrCustom,
 
-        # TestFullEarleyScanless,
+        # TestFullEarleyStandard,
         TestFullEarleyDynamic,
+        TestFullEarleyDynamic_complete,
 
         TestParsers,
         )

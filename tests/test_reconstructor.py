@@ -28,7 +28,7 @@ class TestReconstructor(TestCase):
         item: NL
             | rule
         rule: WORD ":" NUMBER
-        NL: /(\\r?\\n)+\s*/
+        NL: /(\\r?\\n)+\\s*/
         """ + common
 
         code = """
@@ -40,9 +40,9 @@ class TestReconstructor(TestCase):
     def test_starred_group(self):
 
         g = """
-        start: (rule | _NL)*
+        start: (rule | NL)*
         rule: WORD ":" NUMBER
-        _NL: /(\\r?\\n)+\s*/
+        NL: /(\\r?\\n)+\\s*/
         """ + common
 
         code = """
@@ -59,7 +59,7 @@ class TestReconstructor(TestCase):
             | rule
             | "hello" -> hi
         rule: WORD ":" NUMBER
-        NL: /(\\r?\\n)+\s*/
+        NL: /(\\r?\\n)+\\s*/
         """ + common
 
         code = """

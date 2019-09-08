@@ -23,22 +23,14 @@ and merge them back as soon as possible.
 And when a got a bunch of free time,
 I also still sending back to the upstream (lark-parser) new changes or fixes which could be introduced back on the lark main repository.
 
-**Beginners**:
-Pushdown is not just another parser.
-It can parse any grammar you throw at it,
-no matter how complicated or ambiguous,
-and do so efficiently.
-It also constructs a parse-tree for you,
-without additional code on your part.
+Parse any context-free grammar, FAST and EASY!
 
-**Experts**:
-Pushdown lets you choose between Earley and LALR(1),
-to trade-off power and speed.
-It also contains a CYK parser and unique features such as a contextual-lexer.
+**Beginners**: Lark is not just another parser. It can parse any grammar you throw at it, no matter how complicated or ambiguous, and do so efficiently. It also constructs a parse-tree for you, without additional code on your part.
+
+**Experts**: Lark implements both Earley(SPPF) and LALR(1), and several different lexers, so you can trade-off power and speed, according to your requirements. It also provides a variety of sophisticated features and utilities.
 
 Pushdown can:
-
- - Parse all context-free grammars, and handle all ambiguity
+ - Parse all context-free grammars, and handle any ambiguity
  - Build a parse-tree automagically, no construction code required
  - Outperform all other Python libraries when using LALR(1) (Yes, including PLY)
  - Run on every Python interpreter (it's pure-python)
@@ -122,7 +114,6 @@ See more [examples in the examples directory](examples)
  - Import grammars from Nearley.js
  - And much more!
 
-
 ### Comparison to other libraries
 
 #### Performance comparison
@@ -138,6 +129,7 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
 
 *Note: I really wanted to add PLY to the benchmark, but I couldn't find a working JSON parser anywhere written in PLY. If anyone can point me to one that actually works, I would be happy to add it!*
 
+*Note 2: The parsimonious code has been optimized for this specific test, unlike the other benchmarks (Lark included). Its "real-world" performance may not be as good.*
 
 #### Feature comparison
 
@@ -147,7 +139,6 @@ Check out the [JSON tutorial](/docs/json_tutorial.md#conclusion) for more detail
 | [PLY](http://www.dabeaz.com/ply/) | LALR(1) | BNF | No | No | No | No | No |
 | [PyParsing](http://pyparsing.wikispaces.com/) | PEG | Combinators | No | No | No\* | No | No |
 | [Parsley](https://pypi.python.org/pypi/Parsley) | PEG | EBNF | No | No | No\* | No | No |
-| [funcparserlib](https://github.com/vlasovskikh/funcparserlib) | Recursive-Descent | Combinators | No | No | No | No | No |
 | [Parsimonious](https://github.com/erikrose/parsimonious) | PEG | EBNF | Yes | No | No\* | No | No |
 | [ANTLR](https://github.com/antlr/antlr4) | LL(*) | EBNF | Yes | No | Yes? | Yes | No |
 
@@ -180,21 +171,9 @@ Pushdown uses the [MIT license](LICENSE).
 
 (The standalone tool is under GPL2)
 
-
 ## Contribute
 
-Pushdown is currently accepting pull-requests.
-
-There are many ways you can help the project:
-
-* Help solve issues
-* Improve the documentation
-* Write new grammars for Pushdown's library
-* Write a blog post introducing Pushdown to your audience
-* Port Pushdown to another language
-* Help me with code development
-
-If you're interested in taking one of these on, let me know and I will provide more details and assist you in the process.
+Pushdown is currently accepting pull-requests. See [How to develop Lark](/docs/how_to_develop.md)
 
 
 ## Donate

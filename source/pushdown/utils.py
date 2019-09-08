@@ -7,7 +7,6 @@ from .logging import getLogger
 # comment this out to individually control their debug level on each getLogger()
 log = getLogger('pushdown', force=1)
 
-Py36 = (sys.version_info[:2] >= (3, 6))
 
 class fzset(frozenset):
     def __repr__(self):
@@ -26,16 +25,6 @@ def classify_bool(seq, pred):
 
     return true_elems, false_elems
 
-def classify(seq, key=None, value=None):
-    d = {}
-    for item in seq:
-        k = item if (key is None) else key(item)
-        v = item if (value is None) else value(item)
-        if k in d:
-            d[k].append(v)
-        else:
-            d[k] = [v]
-    return d
 
 def bfs(initial, expand):
     open_q = deque(list(initial))
@@ -51,7 +40,104 @@ def bfs(initial, expand):
 
 
 
+def _serialize(value, memo):
+    # if memo and memo.in_types(value):
+    #     return {'__memo__': memo.memoized.get(value)}
+
+    if isinstance(value, Serialize):
+        return value.serialize(memo)
+    elif isinstance(value, list):
+        return [_serialize(elem, memo) for elem in value]
+    elif isinstance(value, frozenset):
+        return list(value)  # TODO reversible?
+    elif isinstance(value, dict):
+        return {key:_serialize(elem, memo) for key, elem in value.items()}
+    return value
+
 ###{standalone
+def classify(seq, key=None, value=None):
+    d = {}
+    for item in seq:
+        k = key(item) if (key is not None) else item
+        v = value(item) if (value is not None) else item
+        if k in d:
+            d[k].append(v)
+        else:
+            d[k] = [v]
+    return d
+
+
+def _deserialize(data, namespace, memo):
+    if isinstance(data, dict):
+        if '__type__' in data: # Object
+            class_ = namespace[data['__type__']]
+            return class_.deserialize(data, memo)
+        elif '@' in data:
+            return memo[data['@']]
+        return {key:_deserialize(value, namespace, memo) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [_deserialize(value, namespace, memo) for value in data]
+    return data
+
+
+class Serialize(object):
+    def memo_serialize(self, types_to_memoize):
+        memo = SerializeMemoizer(types_to_memoize)
+        return self.serialize(memo), memo.serialize()
+
+    def serialize(self, memo=None):
+        if memo and memo.in_types(self):
+            return {'@': memo.memoized.get(self)}
+
+        fields = getattr(self, '__serialize_fields__')
+        res = {f: _serialize(getattr(self, f), memo) for f in fields}
+        res['__type__'] = type(self).__name__
+        postprocess = getattr(self, '_serialize', None)
+        if postprocess:
+            postprocess(res, memo)
+        return res
+
+    @classmethod
+    def deserialize(cls, data, memo):
+        namespace = getattr(cls, '__serialize_namespace__', {})
+        namespace = {c.__name__:c for c in namespace}
+
+        fields = getattr(cls, '__serialize_fields__')
+
+        if '@' in data:
+            return memo[data['@']]
+
+        inst = cls.__new__(cls)
+        for f in fields:
+            try:
+                setattr(inst, f, _deserialize(data[f], namespace, memo))
+            except KeyError as e:
+                raise KeyError("Cannot find key for class", cls, e)
+        postprocess = getattr(inst, '_deserialize', None)
+        if postprocess:
+            postprocess()
+        return inst
+
+
+class SerializeMemoizer(Serialize):
+    __serialize_fields__ = 'memoized',
+
+    def __init__(self, types_to_memoize):
+        self.types_to_memoize = tuple(types_to_memoize)
+        self.memoized = Enumerator()
+
+    def in_types(self, value):
+        return isinstance(value, self.types_to_memoize)
+
+    def serialize(self):
+        return _serialize(self.memoized.reversed(), None)
+
+    @classmethod
+    def deserialize(cls, data, namespace, memo):
+        return _deserialize(data, namespace, memo)
+
+
+
 try:
     STRING_TYPE = basestring
 except NameError:   # Python 3
@@ -80,13 +166,33 @@ def smart_decorator(f, create_decorator):
 
     elif isinstance(f, partial):
         # wraps does not work for partials in 2.7: https://bugs.python.org/issue3445
-        return create_decorator(f.__func__, True)
+        return wraps(f.func)(create_decorator(lambda *args, **kw: f(*args[1:], **kw), True))
 
     else:
         return create_decorator(f.__func__.__call__, True)
 
+import sys, re
+Py36 = (sys.version_info[:2] >= (3, 6))
+
+import sre_parse
+import sre_constants
+def get_regexp_width(regexp):
+    try:
+        return [int(x) for x in sre_parse.parse(regexp).getwidth()]
+    except sre_constants.error:
+        raise ValueError(regexp)
 
 ###}
+
+
+def dedup_list(l):
+    """Given a list (l) will removing duplicates from the list,
+       preserving the original order of the list. Assumes that
+       the list entrie are hashable."""
+    dedup = set()
+    return [ x for x in l if not (x in dedup or dedup.add(x))]
+
+
 
 
 try:
@@ -121,10 +227,21 @@ except NameError:
         return -1
 
 
-import sre_parse
-import sre_constants
-def get_regexp_width(regexp):
-    try:
-        return sre_parse.parse(regexp).getwidth()
-    except sre_constants.error:
-        raise ValueError(regexp)
+
+class Enumerator(Serialize):
+    def __init__(self):
+        self.enums = {}
+
+    def get(self, item):
+        if item not in self.enums:
+            self.enums[item] = len(self.enums)
+        return self.enums[item]
+
+    def __len__(self):
+        return len(self.enums)
+
+    def reversed(self):
+        r = {v: k for k, v in self.enums.items()}
+        assert len(r) == len(self.enums)
+        return r
+

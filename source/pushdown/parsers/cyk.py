@@ -84,29 +84,31 @@ class RuleNode(object):
 class Parser(object):
     """Parser wrapper."""
 
-    def __init__(self, rules, start):
+    def __init__(self, rules):
         super(Parser, self).__init__()
-        self.orig_rules = {rule.alias: rule for rule in rules}
+        self.orig_rules = {rule: rule for rule in rules}
         rules = [self._to_rule(rule) for rule in rules]
         self.grammar = to_cnf(Grammar(rules))
-        self.start = NT(start)
 
-    def _to_rule(self, pushdown_rule):
-        """Converts a pushdown rule, (lhs, rhs, callback, options), to a Rule."""
-        assert isinstance(pushdown_rule.origin, NT)
-        assert all(isinstance(x, Symbol) for x in pushdown_rule.expansion)
+    def _to_rule(self, lark_rule):
+        """Converts a lark rule, (lhs, rhs, callback, options), to a Rule."""
+        assert isinstance(lark_rule.origin, NT)
+        assert all(isinstance(x, Symbol) for x in lark_rule.expansion)
         return Rule(
-            pushdown_rule.origin, pushdown_rule.expansion,
-            weight=pushdown_rule.options.priority if pushdown_rule.options and pushdown_rule.options.priority else 0,
-            alias=pushdown_rule.alias)
+            lark_rule.origin, lark_rule.expansion,
+            weight=lark_rule.options.priority if lark_rule.options and lark_rule.options.priority else 0,
+            alias=lark_rule)
 
-    def parse(self, tokenized):  # pylint: disable=invalid-name
+    def parse(self, tokenized, start):  # pylint: disable=invalid-name
         """Parses input, which is a list of tokens."""
+        assert start
+        start = NT(start)
+
         table, trees = _parse(tokenized, self.grammar)
         # Check if the parse succeeded.
-        if all(r.lhs != self.start for r in table[(0, len(tokenized) - 1)]):
+        if all(r.lhs != start for r in table[(0, len(tokenized) - 1)]):
             raise ParseError('Parsing failed.')
-        parse = trees[(0, len(tokenized) - 1)][self.start]
+        parse = trees[(0, len(tokenized) - 1)][start]
         return self._to_tree(revert_cnf(parse))
 
     def _to_tree(self, rule_node):

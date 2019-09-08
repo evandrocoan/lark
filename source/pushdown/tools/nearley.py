@@ -20,20 +20,21 @@ nearley_grammar = r"""
 
     ?expr: item [":" /[+*?]/]
 
-    ?item: rule|string|regexp
+    ?item: rule|string|regexp|null
          | "(" expansions ")"
 
     rule: NAME
     string: STRING
     regexp: REGEXP
+    null: "null"
     JS: /{%.*?%}/s
     js: JS?
 
     NAME: /[a-zA-Z_$]\w*/
     COMMENT: /#[^\n]*/
     REGEXP: /\[.*?\]/
-    STRING: /".*?"/
 
+    %import common.ESCAPED_STRING -> STRING
     %import common.WS
     %ignore WS
     %ignore COMMENT
@@ -82,6 +83,9 @@ class NearleyToLark(InlineTransformer):
 
     def regexp(self, r):
         return '/%s/' % r
+
+    def null(self):
+        return ''
 
     def string(self, s):
         return self._extra_rule(s)

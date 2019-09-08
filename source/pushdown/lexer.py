@@ -2,12 +2,16 @@
 
 import re
 
-from .utils import Str, classify, get_regexp_width, Py36, getLogger
+from .utils import Str, classify, get_regexp_width, Py36, Serialize
 from .exceptions import UnexpectedCharacters, LexError
 
+from .utils import getLogger
 log = getLogger(__name__)
 
-class Pattern(object):
+###{standalone
+
+class Pattern(Serialize):
+
     def __init__(self, value, flags=()):
         self.value = value
         self.flags = frozenset(flags)
@@ -37,7 +41,12 @@ class Pattern(object):
                 value = ('(?%s)' % f) + value
             return value
 
+
 class PatternStr(Pattern):
+    __serialize_fields__ = 'value', 'flags'
+
+    type = "str"
+
     def to_regexp(self):
         return self._get_flags(re.escape(self.value))
 
@@ -47,17 +56,31 @@ class PatternStr(Pattern):
     max_width = min_width
 
 class PatternRE(Pattern):
+    __serialize_fields__ = 'value', 'flags', '_width'
+
+    type = "re"
+
     def to_regexp(self):
         return self._get_flags(self.value)
 
+    _width = None
+    def _get_width(self):
+        if self._width is None:
+            self._width = get_regexp_width(self.to_regexp())
+        return self._width
+
     @property
     def min_width(self):
-        return get_regexp_width(self.to_regexp())[0]
+        return self._get_width()[0]
     @property
     def max_width(self):
-        return get_regexp_width(self.to_regexp())[1]
+        return self._get_width()[1]
 
-class TerminalDef(object):
+
+class TerminalDef(Serialize):
+    __serialize_fields__ = 'name', 'pattern', 'priority'
+    __serialize_namespace__ = PatternStr, PatternRE
+
     def __init__(self, name, pattern, priority=1):
         assert isinstance(pattern, Pattern), pattern
         self.name = name
@@ -69,24 +92,28 @@ class TerminalDef(object):
 
 
 
-###{standalone
 class Token(Str):
     __slots__ = ('type', 'pos_in_stream', 'value', 'line', 'column', 'end_line', 'end_column')
 
-    def __new__(cls, type_, value, pos_in_stream=None, line=None, column=None):
-        self = super(Token, cls).__new__(cls, value)
+    def __new__(cls, type_, value, pos_in_stream=None, line=None, column=None, end_line=None, end_column=None):
+        try:
+            self = super(Token, cls).__new__(cls, value)
+        except UnicodeDecodeError:
+            value = value.decode('latin1')
+            self = super(Token, cls).__new__(cls, value)
+
         self.type = type_
         self.pos_in_stream = pos_in_stream
         self.value = value
         self.line = line
         self.column = column
-        self.end_line = None
-        self.end_column = None
+        self.end_line = end_line
+        self.end_column = end_column
         return self
 
     @classmethod
     def new_borrow_pos(cls, type_, value, borrow_t):
-        return cls(type_, value, borrow_t.pos_in_stream, line=borrow_t.line, column=borrow_t.column)
+        return cls(type_, value, borrow_t.pos_in_stream, borrow_t.line, borrow_t.column, borrow_t.end_line, borrow_t.end_column)
 
     def __reduce__(self):
         return (self.__class__, (self.type, self.value, self.pos_in_stream, self.line, self.column, ))
@@ -156,6 +183,7 @@ class _Lex:
         newline_types = frozenset(newline_types)
         ignore_types = frozenset(ignore_types)
         line_ctr = LineCounter()
+        last_token = None
 
         while line_ctr.char_pos < len(stream):
             lexer = self.lexer
@@ -171,6 +199,9 @@ class _Lex:
                     t = Token(type_, value, line_ctr.char_pos, line_ctr.line, line_ctr.column)
                     if t.type in lexer.callback:
                         t = lexer.callback[t.type](t)
+                        if not isinstance(t, Token):
+                            raise ValueError("Callbacks must return a token (returned %r)" % t)
+                    last_token = t
                     yield t
                 else:
                     if type_ in lexer.callback:
@@ -184,7 +215,8 @@ class _Lex:
 
                 break
             else:
-                raise UnexpectedCharacters(stream, line_ctr.char_pos, line_ctr.line, line_ctr.column, state=self.state)
+                allowed = {v for m, tfi in lexer.mres for v in tfi.values()}
+                raise UnexpectedCharacters(stream, line_ctr.char_pos, line_ctr.line, line_ctr.column, allowed=allowed, state=self.state, token_history=last_token and [last_token])
 
 
 class UnlessCallback:
@@ -199,7 +231,17 @@ class UnlessCallback:
                 break
         return t
 
-###}
+class CallChain:
+    def __init__(self, callback1, callback2, cond):
+        self.callback1 = callback1
+        self.callback2 = callback2
+        self.cond = cond
+
+    def __call__(self, t):
+        t2 = self.callback1(t)
+        return self.callback2(t) if self.cond(t2) else t2
+
+
 
 
 
@@ -247,15 +289,16 @@ def build_mres(terminals, match_whole=False):
     return _build_mres(terminals, len(terminals), match_whole)
 
 def _regexp_has_newline(r):
-    """Expressions that may indicate newlines in a regexp:
+    r"""Expressions that may indicate newlines in a regexp:
         - newlines (\n)
         - escaped newline (\\n)
         - anything but ([^...])
         - any-char (.) when the flag (?s) exists
+        - spaces (\s)
     """
-    return '\n' in r or '\\n' in r or '[^' in r or ('(?s' in r and '.' in r)
+    return '\n' in r or '\\n' in r or '\\s' in r or '[^' in r or ('(?s' in r and '.' in r)
 
-class Lexer:
+class Lexer(object):
     """Lexer interface
 
     Method Signatures:
@@ -266,7 +309,9 @@ class Lexer:
     set_parser_state = NotImplemented
     lex = NotImplemented
 
+
 class TraditionalLexer(Lexer):
+
     def __init__(self, terminals, ignore=(), user_callbacks={}):
         assert all(isinstance(t, TerminalDef) for t in terminals), terminals
 
@@ -289,22 +334,30 @@ class TraditionalLexer(Lexer):
         self.ignore_types = list(ignore)
 
         terminals.sort(key=lambda x:(-x.priority, -x.pattern.max_width, -len(x.pattern.value), x.name))
+        self.terminals = terminals
+        self.user_callbacks = user_callbacks
+        self.build()
 
-        terminals, self.callback = _create_unless(terminals)
+    def build(self):
+        terminals, self.callback = _create_unless(self.terminals)
         assert all(self.callback.values())
 
-        for type_, f in user_callbacks.items():
-            assert type_ not in self.callback
-            self.callback[type_] = f
-
         log(2, 'tokens/terminals %s', str(terminals))
-        self.terminals = terminals
+
+        for type_, f in self.user_callbacks.items():
+            if type_ in self.callback:
+                # Already a callback there, probably UnlessCallback
+                self.callback[type_] = CallChain(self.callback[type_], f, lambda t: t.type == type_)
+            else:
+                self.callback[type_] = f
 
         self.mres = build_mres(terminals)
 
 
     def lex(self, stream):
         return _Lex(self).lex(stream, self.newline_types, self.ignore_types)
+
+
 
 
 class ContextualLexer(Lexer):
@@ -342,4 +395,4 @@ class ContextualLexer(Lexer):
             l.lexer = self.lexers[self.parser_state]
             l.state = self.parser_state
 
-
+###}

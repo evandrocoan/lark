@@ -4,9 +4,10 @@ import unittest
 from unittest import TestCase
 import copy
 import pickle
+import functools
 
 from pushdown.tree import Tree
-from pushdown.visitors import Transformer, Interpreter, visit_children_decor, v_args
+from pushdown.visitors import Transformer, Interpreter, visit_children_decor, v_args, Discard
 
 
 class TestTrees(TestCase):
@@ -137,12 +138,50 @@ class TestTrees(TestCase):
             f = float
             sub = lambda self, a, b: a-b
 
+            not_a_method = {'other': 'stuff'}
+
             @v_args(inline=False)
             def add(self, values):
                 return sum(values)
 
         res = T().transform(t)
         self.assertEqual(res, 2.9)
+
+    def test_partial(self):
+
+        tree = Tree("start", [Tree("a", ["test1"]), Tree("b", ["test2"])])
+
+        def test(prefix, s, postfix):
+            return prefix + s.upper() + postfix
+
+        @v_args(inline=True)
+        class T(Transformer):
+            a = functools.partial(test, "@", postfix="!")
+            b = functools.partial(lambda s: s + "!")
+
+        res = T().transform(tree)
+        assert res.children == ["@TEST1!", "test2!"]
+
+
+    def test_discard(self):
+        class MyTransformer(Transformer):
+            def a(self, args):
+                return 1 # some code here
+
+            def b(cls, args):
+                raise Discard()
+
+        t = Tree('root', [
+            Tree('b', []),
+            Tree('a', []),
+            Tree('b', []),
+            Tree('c', []),
+            Tree('b', []),
+        ])
+        t2 = Tree('root', [1, Tree('c', [])])
+
+        x = MyTransformer().transform( t )
+        self.assertEqual(x, t2)
 
 
 if __name__ == '__main__':

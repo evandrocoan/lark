@@ -22,7 +22,7 @@ Lark grammars are composed of a list of definitions and directives, each on its 
 
 Lark begins the parse with the rule 'start', unless specified otherwise in the options.
 
-Names of rules are always in lowercase, while names of terminals are always in uppercase. This distinction has practical effects for tree construction, and for building a lexer (aka tokenizer, or scanner).
+Names of rules are always in lowercase, while names of terminals are always in uppercase. This distinction has practical effects, for the shape of the generated parse-tree, and the automatic construction of the lexer (aka tokenizer, or scanner).
 
 
 ## Terminals
@@ -44,6 +44,12 @@ Literals can be one of:
 * `"case-insensitive string"i`
 * `/re with flags/imulx`
 * Literal range: `"a".."z"`, `"1".."9"`, etc.
+
+### Priority
+
+Terminals can be assigned priority only when using a lexer (future versions may support Earley's dynamic lexing).
+
+Priority can be either positive or negative. In not specified for a terminal, it's assumed to be 1 (i.e. the default).
 
 #### Notes for when using a lexer:
 
@@ -85,12 +91,12 @@ Each item is one of:
 * `TERMINAL`
 * `"string literal"` or `/regexp literal/`
 * `(item item ..)` - Group items
-* `[item item ..]` - Maybe. Same as: `(item item ..)?`
+* `[item item ..]` - Maybe. Same as `(item item ..)?`
 * `item?` - Zero or one instances of item ("maybe")
 * `item*` - Zero or more instances of item
 * `item+` - One or more instances of item
 * `item ~ n` - Exactly *n* instances of item
-* `item ~ n..m` - Between *n* to *m* instances of item
+* `item ~ n..m` - Between *n* to *m* instances of item (not recommended for wide ranges, due to performance issues)
 
 **Examples:**
 ```perl
@@ -102,6 +108,11 @@ expr: expr operator expr
 four_words: word ~ 4
 ```
 
+### Priority
+
+Rules can be assigned priority only when using Earley (future versions may support LALR as well).
+
+Priority can be either positive or negative. In not specified for a terminal, it's assumed to be 1 (i.e. the default).
 
 ## Directives
 
@@ -133,19 +144,28 @@ When importing rules, all their dependencies will be imported into a namespace, 
 **Syntax:**
 ```html
 %import <module>.<TERMINAL>
-%import <module> (<TERM1> <TERM2>)
+%import <module>.<rule>
+%import <module>.<TERMINAL> -> <NEWTERMINAL>
+%import <module>.<rule> -> <newrule>
+%import <module> (<TERM1> <TERM2> <rule1> <rule2>)
 ```
 
 If the module path is absolute, Lark will attempt to load it from the built-in directory (currently, only `common.pushdown` is available).
 
 If the module path is relative, such as `.path.to.file`, Lark will attempt to load it from the current working directory. Grammars must have the `.pushdown` extension.
 
+The rule or terminal can be imported under an other name with the `->` syntax.
+
 **Example:**
 ```perl
 %import common.NUMBER
 
 %import .terminals_file (A B C)
+
+%import .rules_file.rulea -> ruleb
 ```
+
+Note that `%ignore` directives cannot be imported. Imported rules will abide by the `%ignore` directives declared in the main grammar.
 
 ### %declare
 

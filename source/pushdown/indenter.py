@@ -5,8 +5,9 @@ from .lexer import Token
 ###{standalone
 class Indenter:
     def __init__(self):
-        self.paren_level = 0
-        self.indent_level = [0]
+        self.paren_level = None
+        self.indent_level = None
+        assert self.tab_len > 0
 
     def handle_NL(self, token):
         if self.paren_level > 0:
@@ -27,7 +28,7 @@ class Indenter:
 
             assert indent == self.indent_level[-1], '%s != %s' % (indent, self.indent_level[-1])
 
-    def process(self, stream):
+    def _process(self, stream):
         for token in stream:
             if token.type == self.NL_type:
                 for t in self.handle_NL(token):
@@ -46,6 +47,11 @@ class Indenter:
             yield Token(self.DEDENT_type, '')
 
         assert self.indent_level == [0], self.indent_level
+
+    def process(self, stream):
+        self.paren_level = 0
+        self.indent_level = [0]
+        return self._process(stream)
 
     # XXX Hack for ContextualLexer. Maybe there's a more elegant solution?
     @property

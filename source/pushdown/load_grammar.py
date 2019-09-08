@@ -12,14 +12,16 @@ from .parse_tree_builder import ParseTreeBuilder
 from .parser_frontends import LALR_TraditionalLexer
 from .common import LexerConf, ParserConf
 from .grammar import RuleOptions, Rule, Terminal, NonTerminal, Symbol
-from .utils import classify, suppress, getLogger
+from .utils import classify, suppress, dedup_list, Str
 from .exceptions import GrammarError, UnexpectedCharacters, UnexpectedToken
 
 from .tree import Tree, SlottedTree as ST
 from .visitors import Transformer, Visitor, v_args, Transformer_InPlace
 inline_args = v_args(inline=True)
 
+from .utils import getLogger
 log = getLogger(__name__)
+
 __path__ = os.path.dirname(__file__)
 IMPORT_PATHS = [os.path.join(__path__, 'grammars')]
 
@@ -91,7 +93,7 @@ TERMINALS = {
     '_IGNORE': r'%ignore',
     '_DECLARE': r'%declare',
     '_IMPORT': r'%import',
-    'NUMBER': r'\d+',
+    'NUMBER': r'[+-]?\d+',
 }
 
 RULES = {
@@ -140,7 +142,7 @@ RULES = {
     'declare': ['_DECLARE _declare_args _NL'],
     'import': ['_IMPORT _import_path _NL',
                '_IMPORT _import_path _LPAR name_list _RPAR _NL',
-               '_IMPORT _import_path _TO TERMINAL _NL'],
+               '_IMPORT _import_path _TO name _NL'],
 
     '_import_path': ['import_lib', 'import_rel'],
     'import_lib': ['_import_args'],
@@ -177,13 +179,7 @@ class EBNF_to_BNF(Transformer_InPlace):
 
     def expr(self, rule, op, *args):
         if op.value == '?':
-            if isinstance(rule, Terminal) and rule.filter_out and not (
-                    self.rule_options and self.rule_options.keep_all_tokens):
-                empty = ST('expansion', [])
-            elif isinstance(rule, NonTerminal) and rule.name.startswith('_'):
-                empty = ST('expansion', [])
-            else:
-                empty = _EMPTY
+            empty = ST('expansion', [])
             return ST('expansions', [rule, empty])
         elif op.value == '+':
             # a : b c+ d
@@ -203,10 +199,27 @@ class EBNF_to_BNF(Transformer_InPlace):
                 mn = mx = int(args[0])
             else:
                 mn, mx = map(int, args)
-                if mx < mn:
+                if mx < mn or mn < 0:
                     raise GrammarError("Bad Range for %s (%d..%d isn't allowed)" % (rule, mn, mx))
             return ST('expansions', [ST('expansion', [rule] * n) for n in range(mn, mx+1)])
         assert False, op
+
+    def maybe(self, rule):
+        keep_all_tokens = self.rule_options and self.rule_options.keep_all_tokens
+
+        def will_not_get_removed(sym):
+            if isinstance(sym, NonTerminal):
+                return not sym.name.startswith('_')
+            if isinstance(sym, Terminal):
+                return keep_all_tokens or not sym.filter_out
+            assert False
+
+        if any(rule.scan_values(will_not_get_removed)):
+            empty = _EMPTY
+        else:
+            empty = ST('expansion', [])
+
+        return ST('expansions', [rule, empty])
 
 
 class SimplifyRule_Visitor(Visitor):
@@ -238,7 +251,7 @@ class SimplifyRule_Visitor(Visitor):
                 tree.data = 'expansions'
                 tree.children = [self.visit(ST('expansion', [option if i==j else other
                                                             for j, other in enumerate(tree.children)]))
-                                    for option in set(child.children)]
+                                    for option in dedup_list(child.children)]
                 self._flatten(tree)
                 break
 
@@ -253,7 +266,7 @@ class SimplifyRule_Visitor(Visitor):
 
     def expansions(self, tree):
         self._flatten(tree)
-        tree.children = list(set(tree.children))
+        tree.children = dedup_list(tree.children)
 
 
 class RuleTreeToText(Transformer):
@@ -269,9 +282,6 @@ class RuleTreeToText(Transformer):
 
 @inline_args
 class CanonizeTree(Transformer_InPlace):
-    def maybe(self, expr):
-        return ST('expr', [expr, Token('OP', '?', -1)])
-
     def tokenmods(self, *args):
         if len(args) == 1:
             return list(args)
@@ -344,10 +354,13 @@ def _fix_escaping(s):
     for n in i:
         w += n
         if n == '\\':
-            n2 = next(i)
+            try:
+                n2 = next(i)
+            except StopIteration:
+                raise ValueError("Literal ended unexpectedly (bad escaping): `%r`" % s)
             if n2 == '\\':
                 w += '\\\\'
-            elif n2 not in 'unftr':
+            elif n2 not in 'uxnftr':
                 w += '\\'
             w += n2
     w = w.replace('\\"', '"').replace("'", "\\'")
@@ -390,7 +403,7 @@ class PrepareLiterals(Transformer_InPlace):
         assert start.type == end.type == 'STRING'
         start = start.value[1:-1]
         end = end.value[1:-1]
-        assert len(start) == len(end) == 1, (start, end, len(start), len(end))
+        assert len(_fix_escaping(start)) == len(_fix_escaping(end)) == 1, (start, end, len(_fix_escaping(start)), len(_fix_escaping(end)))
         regexp = '[%s-%s]' % (start, end)
         return ST('pattern', [PatternRE(regexp)])
 
@@ -429,6 +442,9 @@ class TerminalTreeToPattern(Transformer):
             assert len(args) == 2
         return PatternRE('(?:%s)%s' % (inner.to_regexp(), op), inner.flags)
 
+    def maybe(self, expr):
+        return self.expr(expr + ['?'])
+
     def alias(self, t):
         raise GrammarError("Aliasing not allowed in terminals (You used -> in the wrong place)")
 
@@ -441,9 +457,9 @@ class PrepareSymbols(Transformer_InPlace):
         if isinstance(v, Tree):
             return v
         elif v.type == 'RULE':
-            return NonTerminal(v.value)
+            return NonTerminal(Str(v.value))
         elif v.type == 'TERMINAL':
-            return Terminal(v.value, filter_out=v.startswith('_'))
+            return Terminal(Str(v.value), filter_out=v.startswith('_'))
         assert False
 
 def _choice_of_rules(rules):
@@ -455,7 +471,7 @@ class Grammar:
         self.rule_defs = rule_defs
         self.ignore = ignore
 
-    def compile(self):
+    def compile(self, start):
         # We change the trees in-place (to support huge grammars)
         # So deepcopy allows calling compile more than once.
         term_defs = deepcopy(list(self.term_defs))
@@ -501,27 +517,61 @@ class Grammar:
 
         simplify_rule = SimplifyRule_Visitor()
         compiled_rules = []
-        for name, tree, options in rules:
+        for rule_content in rules:
+            name, tree, options = rule_content
             simplify_rule.visit(tree)
             expansions = rule_tree_to_text.transform(tree)
 
-            for expansion, alias in expansions:
-                log(2, "expansion: %s", expansion)
+            for i, (expansion, alias) in enumerate(expansions):
+                log(2, "expansion: %s '%s'->'%s'", i, expansion, alias)
+
                 if alias and name.startswith('_'):
                     raise GrammarError("Rule %s is marked for expansion (it starts with an underscore) and isn't allowed to have aliases (alias=%s)" % (name, alias))
 
-                empty_indices = [x==_EMPTY for i, x in enumerate(expansion)]
+                empty_indices = [x==_EMPTY for x in expansion]
                 if any(empty_indices):
-                    assert options
-                    exp_options = copy(options)
+                    exp_options = copy(options) if options else RuleOptions()
                     exp_options.empty_indices = empty_indices
                     expansion = [x for x in expansion if x!=_EMPTY]
                 else:
                     exp_options = options
 
                 assert all(isinstance(x, Symbol) for x in expansion), expansion
-                rule = Rule(NonTerminal(name), expansion, alias, exp_options)
+                rule = Rule(NonTerminal(name), expansion, i, alias, exp_options)
                 compiled_rules.append(rule)
+
+        # Remove duplicates of empty rules, throw error for non-empty duplicates
+        if len(set(compiled_rules)) != len(compiled_rules):
+            duplicates = classify(compiled_rules, lambda x: x)
+            for dups in duplicates.values():
+                if len(dups) > 1:
+                    if dups[0].expansion:
+                        raise GrammarError("Rules defined twice: %s\n\n(Might happen due to colliding expansion of optionals: [] or ?)" % ''.join('\n  * %s' % i for i in dups))
+
+                    # Empty rule; assert all other attributes are equal
+                    assert len({(r.alias, r.order, r.options) for r in dups}) == len(dups)
+
+            # Remove duplicates
+            compiled_rules = list(set(compiled_rules))
+
+
+        # Filter out unused rules
+        while True:
+            c = len(compiled_rules)
+            used_rules = {s for r in compiled_rules
+                                for s in r.expansion
+                                if isinstance(s, NonTerminal)
+                                and s != r.origin}
+            used_rules |= {NonTerminal(s) for s in start}
+            compiled_rules = [r for r in compiled_rules if r.origin in used_rules]
+            if len(compiled_rules) == c:
+                break
+
+        # Filter out unused terminals
+        used_terms = {t.name for r in compiled_rules
+                             for t in r.expansion
+                             if isinstance(t, Terminal)}
+        terminals = [t for t in terminals if t.name in used_terms or t.name in self.ignore]
 
         return terminals, compiled_rules, self.ignore
 
@@ -533,9 +583,10 @@ def import_grammar(grammar_path, base_paths=[]):
         import_paths = base_paths + IMPORT_PATHS
         for import_path in import_paths:
             with suppress(IOError):
-                with open(os.path.join(import_path, grammar_path)) as f:
+                joined_path = os.path.join(import_path, grammar_path)
+                with open(joined_path) as f:
                     text = f.read()
-                grammar = load_grammar(text, grammar_path)
+                grammar = load_grammar(text, joined_path)
                 _imported_grammars[grammar_path] = grammar
                 break
         else:
@@ -562,13 +613,17 @@ def import_from_grammar_into_namespace(grammar, namespace, aliases):
             _, tree, _ = imported_rules[symbol]
         except KeyError:
             raise GrammarError("Missing symbol '%s' in grammar %s" % (symbol, namespace))
-        return tree.scan_values(lambda x: x.type in ('RULE', 'TERMINAL'))
+
+        return _find_used_symbols(tree)
+
 
     def get_namespace_name(name):
         try:
             return aliases[name].value
         except KeyError:
-            return '%s.%s' % (namespace, name)
+            if name[0] == '_':
+                return '_%s__%s' % (namespace, name[1:])
+            return '%s__%s' % (namespace, name)
 
     to_import = list(bfs(aliases, rule_dependencies))
     for symbol in to_import:
@@ -637,16 +692,21 @@ class PrepareGrammar(Transformer_InPlace):
         return name
 
 
+def _find_used_symbols(tree):
+    assert tree.data == 'expansions'
+    return {t for x in tree.find_data('expansion')
+              for t in x.scan_values(lambda t: t.type in ('RULE', 'TERMINAL'))}
+
 class GrammarLoader:
     def __init__(self):
         terminals = [TerminalDef(name, PatternRE(value)) for name, value in TERMINALS.items()]
 
         rules = [options_from_rule(name, x) for name, x in  RULES.items()]
-        rules = [Rule(NonTerminal(r), symbols_from_strcase(x.split()), None, o) for r, xs, o in rules for x in xs]
+        rules = [Rule(NonTerminal(r), symbols_from_strcase(x.split()), i, None, o) for r, xs, o in rules for i, x in enumerate(xs)]
         callback = ParseTreeBuilder(rules, ST).create_callback()
         lexer_conf = LexerConf(terminals, ['WS', 'COMMENT'])
 
-        parser_conf = ParserConf(rules, callback, 'start')
+        parser_conf = ParserConf(rules, callback, ['start'])
         self.parser = LALR_TraditionalLexer(lexer_conf, parser_conf)
 
         self.canonize_tree = CanonizeTree()
@@ -693,7 +753,7 @@ class GrammarLoader:
         rule_defs = [options_from_rule(*x) for x in rule_defs]
 
         # Execute statements
-        ignore = []
+        ignore, imports = [], {}
         for (stmt,) in statements:
             if stmt.data == 'ignore':
                 t ,= stmt.children
@@ -702,35 +762,39 @@ class GrammarLoader:
                 if len(stmt.children) > 1:
                     path_node, arg1 = stmt.children
                 else:
-                    path_node ,= stmt.children
+                    path_node, = stmt.children
                     arg1 = None
 
                 if isinstance(arg1, Tree):  # Multi import
-                    dotted_path = path_node.children
+                    dotted_path = tuple(path_node.children)
                     names = arg1.children
-                    aliases = names  # Can't have aliased multi import, so all aliases will be the same as names
+                    aliases = dict(zip(names, names))  # Can't have aliased multi import, so all aliases will be the same as names
                 else:  # Single import
-                    dotted_path = path_node.children[:-1]
-                    names = [path_node.children[-1]]  # Get name from dotted path
-                    aliases = [arg1] if arg1 else names  # Aliases if exist
-
-                grammar_path = os.path.join(*dotted_path) + EXT
+                    dotted_path = tuple(path_node.children[:-1])
+                    name = path_node.children[-1]  # Get name from dotted path
+                    aliases = {name: arg1 or name}  # Aliases if exist
 
                 if path_node.data == 'import_lib':  # Import from library
-                    g = import_grammar(grammar_path)
+                    base_paths = []
                 else:  # Relative import
                     if grammar_name == '<string>':  # Import relative to script file path if grammar is coded in script
-                        base_file = os.path.abspath(sys.modules['__main__'].__file__)
+                        try:
+                            base_file = os.path.abspath(sys.modules['__main__'].__file__)
+                        except AttributeError:
+                            base_file = None
                     else:
                         base_file = grammar_name  # Import relative to grammar file path if external grammar file
-                    base_path = os.path.split(base_file)[0]
-                    g = import_grammar(grammar_path, base_paths=[base_path])
+                    if base_file:
+                        base_paths = [os.path.split(base_file)[0]]
+                    else:
+                        base_paths = [os.path.abspath(os.path.curdir)]
 
-                aliases_dict = dict(zip(names, aliases))
-                new_td, new_rd = import_from_grammar_into_namespace(g, '.'.join(dotted_path), aliases_dict)
-
-                term_defs += new_td
-                rule_defs += new_rd
+                try:
+                    import_base_paths, import_aliases = imports[dotted_path]
+                    assert base_paths == import_base_paths, 'Inconsistent base_paths for %s.' % '.'.join(dotted_path)
+                    import_aliases.update(aliases)
+                except KeyError:
+                    imports[dotted_path] = base_paths, aliases
 
             elif stmt.data == 'declare':
                 for t in stmt.children:
@@ -738,6 +802,14 @@ class GrammarLoader:
             else:
                 assert False, stmt
 
+        # import grammars
+        for dotted_path, (base_paths, aliases) in imports.items():
+            grammar_path = os.path.join(*dotted_path) + EXT
+            g = import_grammar(grammar_path, base_paths=base_paths)
+            new_td, new_rd = import_from_grammar_into_namespace(g, '__'.join(dotted_path), aliases)
+
+            term_defs += new_td
+            rule_defs += new_rd
 
         # Verify correctness 1
         for name, _ in term_defs:
@@ -761,7 +833,7 @@ class GrammarLoader:
 
             name = '__IGNORE_%d'% len(ignore_names)
             ignore_names.append(name)
-            term_defs.append((name, (t, 0)))
+            term_defs.append((name, (t, 1)))
 
         # Verify correctness 2
         terminal_names = set()
@@ -786,17 +858,13 @@ class GrammarLoader:
             rule_names.add(name)
 
         for name, expansions, _o in rules:
-            used_symbols = {t for x in expansions.find_data('expansion')
-                              for t in x.scan_values(lambda t: t.type in ('RULE', 'TERMINAL'))}
-            for sym in used_symbols:
+            for sym in _find_used_symbols(expansions):
                 if sym.type == 'TERMINAL':
                     if sym not in terminal_names:
                         raise GrammarError("Token '%s' used but not defined (in rule %s)" % (sym, name))
                 else:
                     if sym not in rule_names:
                         raise GrammarError("Rule '%s' used but not defined (in rule %s)" % (sym, name))
-
-        # TODO don't include unused terminals, they can only cause trouble!
 
         return Grammar(rules, term_defs, ignore_names)
 

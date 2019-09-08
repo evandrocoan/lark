@@ -4,7 +4,7 @@ from .tree import Tree
 from .visitors import Transformer_InPlace
 from .common import ParserConf
 from .lexer import Token, PatternStr
-from .parsers import earley, resolve_ambig
+from .parsers import earley
 from .grammar import Rule, Terminal, NonTerminal
 
 
@@ -34,7 +34,8 @@ class WriteTokensTransformer(Transformer_InPlace):
         for sym in tree.meta.orig_expansion:
             if is_discarded_terminal(sym):
                 t = self.tokens[sym.name]
-                assert isinstance(t.pattern, PatternStr)
+                if not isinstance(t.pattern, PatternStr):
+                    raise NotImplementedError("Reconstructing regexps not supported yet: %s" % t)
                 to_write.append(t.pattern.value)
             else:
                 x = next(iter_args)
@@ -68,10 +69,13 @@ class MakeMatchTree:
 class Reconstructor:
     def __init__(self, parser):
         # XXX TODO calling compile twice returns different results!
-        tokens, rules, _grammar_extra = parser.grammar.compile()
+        tokens, rules, _grammar_extra = parser.grammar.compile(parser.options.start)
 
         self.write_tokens = WriteTokensTransformer({t.name:t for t in tokens})
         self.rules = list(self._build_recons_rules(rules))
+        callbacks = {rule: rule.alias for rule in self.rules}   # TODO pass callbacks through dict, instead of alias?
+        self.parser = earley.Parser(ParserConf(self.rules, callbacks, parser.options.start),
+                                    self._match, resolve_ambiguity=True)
 
     def _build_recons_rules(self, rules):
         expand1s = {r.origin for r in rules if r.options and r.options.expand1}
@@ -95,15 +99,12 @@ class Reconstructor:
 
             sym = NonTerminal(r.alias) if r.alias else r.origin
 
-            yield Rule(sym, recons_exp, MakeMatchTree(sym.name, r.expansion))
+            yield Rule(sym, recons_exp, alias=MakeMatchTree(sym.name, r.expansion))
 
         for origin, rule_aliases in aliases.items():
             for alias in rule_aliases:
-                yield Rule(origin, [Terminal(alias)], MakeMatchTree(origin.name, [NonTerminal(alias)]))
-
-            yield Rule(origin, [Terminal(origin.name)], MakeMatchTree(origin.name, [origin]))
-
-
+                yield Rule(origin, [Terminal(alias)], alias=MakeMatchTree(origin.name, [NonTerminal(alias)]))
+            yield Rule(origin, [Terminal(origin.name)], alias=MakeMatchTree(origin.name, [origin]))
 
     def _match(self, term, token):
         if isinstance(token, Tree):
@@ -114,8 +115,7 @@ class Reconstructor:
 
     def _reconstruct(self, tree):
         # TODO: ambiguity?
-        parser = earley.Parser(ParserConf(self.rules, None, tree.data), self._match, resolve_ambiguity=resolve_ambig.standard_resolve_ambig)
-        unreduced_tree = parser.parse(tree.children)   # find a full derivation
+        unreduced_tree = self.parser.parse(tree.children, tree.data)   # find a full derivation
         assert unreduced_tree.data == tree.data
         res = self.write_tokens.transform(unreduced_tree)
         for item in res:
@@ -127,4 +127,3 @@ class Reconstructor:
 
     def reconstruct(self, tree):
         return ''.join(self._reconstruct(tree))
-

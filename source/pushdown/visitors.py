@@ -3,12 +3,13 @@ import inspect
 
 from .utils import smart_decorator
 from .tree import Tree
-from .logging import getLogger
 from .exceptions import VisitError, GrammarError
+from .lexer import Token
 
 ###{standalone
 from inspect import getmembers, getmro
 
+from .utils import getLogger
 log = getLogger(__name__)
 
 class Discard(Exception):
@@ -24,6 +25,10 @@ class Transformer:
 
     Can be used to implement map or reduce.
     """
+
+    __visit_tokens__ = False   # For backwards compatibility
+    def __init__(self,  visit_tokens=False):
+        self.__visit_tokens__ = visit_tokens
 
     def _call_userfunc(self, tree, new_children=None):
         # Assumes tree is already transformed
@@ -43,14 +48,28 @@ class Transformer:
                     return f(*children)
                 elif getattr(f, 'whole_tree', False):
                     if new_children is not None:
-                        raise NotImplementedError("Doesn't work with the base Transformer class")
+                        tree.children = new_children
                     return f(tree)
                 else:
                     return f(children)
-            except GrammarError:
+            except (GrammarError, Discard):
                 raise
             except Exception as e:
-                raise VisitError('Error trying to process rule "%s":\n\n%s' % (tree.data, e))
+                raise VisitError(tree, e)
+
+    def _call_userfunc_token(self, token):
+        try:
+            f = getattr(self, token.type)
+        except AttributeError:
+            return self.__default_token__(token)
+        else:
+            try:
+                return f(token)
+            except (GrammarError, Discard):
+                raise
+            except Exception as e:
+                raise VisitError(token, e)
+
 
     def _transform_children(self, tree):
         for c in tree.children:
@@ -58,6 +77,9 @@ class Transformer:
                 if isinstance(c, Tree):
                     c.parent = tree
                     yield self._transform_tree(c)
+                elif self.__visit_tokens__ and isinstance(c, Token):
+                    c.parent = tree
+                    yield self._call_userfunc_token(c)
                 else:
                     yield c
             except Discard:
@@ -77,13 +99,22 @@ class Transformer:
         """Default operation on tree (for override)"""
         return Tree(tree.data, children, tree.meta, tree.parent)
 
+    def __default_token__(self, token):
+        "Default operation on token (for override)"
+        return token
+
+
     @classmethod
     def _apply_decorator(cls, decorator, **kwargs):
         mro = getmro(cls)
         assert mro[0] is cls
         libmembers = {name for _cls in mro[1:] for name, _ in getmembers(_cls)}
         for name, value in getmembers(cls):
-            if name.startswith('_') or name in libmembers:
+
+            # Make sure the function isn't inherited (unless it's overwritten)
+            if name.startswith('_') or (name in libmembers and name not in cls.__dict__):
+                continue
+            if not callable(cls.__dict__[name]):
                 continue
 
             # Skip if v_args already applied (at the function level)
