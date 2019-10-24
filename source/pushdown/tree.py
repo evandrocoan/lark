@@ -179,7 +179,9 @@ def pydot__tree_to_png(tree, filename, rankdir="LR", **kwargs):
 
     def new_leaf(leaf, index):
         if index[0] > -1: index[0] += 1
-        node = pydot.Node(i[0], label=leaf.pretty(index[0]) if index[0] > -1 else repr(leaf))
+        label = leaf.pretty(index[0]) if index[0] > -1 else repr(leaf)
+
+        node = pydot.Node(i[0], label=label)
         i[0] += 1
         graph.add_node(node)
         return node
@@ -189,8 +191,10 @@ def pydot__tree_to_png(tree, filename, rankdir="LR", **kwargs):
         color |= 0x808080
 
         subnodes = [_to_pydot(child, index) if isinstance(child, Tree) else new_leaf(child, index)
-                    for child in subtree.children]
-        node = pydot.Node(i[0], style="filled", fillcolor="#%x"%color, label=subtree.data)
+                for child in subtree.children
+        ]
+
+        node = pydot.Node(i[0], style="filled", fillcolor="#%x" % color, label=subtree.data)
         i[0] += 1
         graph.add_node(node)
 
