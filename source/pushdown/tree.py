@@ -163,8 +163,11 @@ def pydot__tree_to_png(tree, filename, rankdir="LR", **kwargs):
     directed graphs drawn from top to bottom, from left to right, from bottom to
     top, and from right to left, respectively.
 
-    If `debug` is True, it will call Token.pretty() instead of Token.__repr__()
+    If `debug` is greater than 0, it will call Token.pretty() instead of Token.__repr__()
     when creating the token string representation.
+
+    If `debug` is -1, it will call str() when creating the token string representation.
+    If `debug` is -2, it will call repr() when creating the token string representation.
 
     `kwargs` can be any graph attribute (e. g. `dpi=200`). For a list of
     possible attributes, see https://www.graphviz.org/doc/info/attrs.html.
@@ -179,7 +182,7 @@ def pydot__tree_to_png(tree, filename, rankdir="LR", **kwargs):
 
     def new_leaf(leaf, index):
         if index[0] > -1: index[0] += 1
-        label = leaf.pretty(index[0]) if index[0] > -1 else repr(leaf)
+        label = leaf.pretty(index[0]) if index[0] > -1 else str(leaf) if index[0] > -2 else repr(leaf)
 
         node = pydot.Node(i[0], label=label)
         i[0] += 1
