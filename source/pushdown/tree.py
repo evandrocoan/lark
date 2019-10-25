@@ -182,7 +182,7 @@ def pydot__tree_to_png(tree, filename, rankdir="LR", **kwargs):
 
     def new_leaf(leaf, index):
         if index[0] > -1: index[0] += 1
-        label = leaf.pretty(index[0]) if index[0] > -1 else str(leaf) if index[0] > -2 else repr(leaf)
+        label = leaf.pretty(index[0]) if index[0] > -1 else repr(str(leaf)) if index[0] > -2 else repr(leaf)
 
         node = pydot.Node(i[0], label=label)
         i[0] += 1
