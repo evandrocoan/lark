@@ -5,13 +5,12 @@ import sys
 import unittest
 import logging
 
-def assert_path(module):
-    module = os.path.abspath( module )
-
+def assert_path(*args):
+    module = os.path.realpath( os.path.join( *args ) )
     if module not in sys.path:
         sys.path.insert( 0, module )
 
-assert_path( os.path.join( os.path.basename( os.path.realpath( __file__ ) ), '..', 'source' ) )
+assert_path( os.path.basename( os.path.realpath( __file__ ) ), '..', 'source' )
 
 from .test_trees import TestTrees
 from .test_tools import TestStandalone
